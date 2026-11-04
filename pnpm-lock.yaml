@@ -236,9 +236,6 @@ catalogs:
     matrix-web-i18n:
       specifier: 3.6.0
       version: 3.6.0
-    playwright-core:
-      specifier: 1.62.1
-      version: 1.62.1
     react:
       specifier: ^19.0.0
       version: 19.2.8
@@ -7759,8 +7756,8 @@ packages:
   jju@1.4.0:
     resolution: {integrity: sha512-8wb9Yw966OSxApiCt0K3yNJL8pnNeIv+OEq2YMidz4FKP6nonSRoOXc80iXY4JaN2FC11B9qsNmDsm+ZOfMROA==}
 
-  joi@18.2.3:
-    resolution: {integrity: sha512-N5A3KTWQpPWT4ExxxPlUx7WmykGXRzhNidWhV41d6Abu9YfI2NyWCJuxdPnslJCPWtbRpSVOWSnSS6GakLM/Rg==}
+  joi@18.3.1:
+    resolution: {integrity: sha512-mV9M4Llh4va3NT90p7KBtQhoZqjs8xLX7EWYE4y/GG3yLF6REbIBEHSUb0UX1JXRht2w5tiLSsvmpYc5akiqIw==}
     engines: {node: '>= 20'}
 
   js-tokens@10.0.0:
@@ -18593,7 +18590,7 @@ snapshots:
 
   jju@1.4.0: {}
 
-  joi@18.2.3:
+  joi@18.3.1:
     dependencies:
       '@hapi/address': 5.1.1
       '@hapi/formula': 3.0.2
@@ -21982,7 +21979,7 @@ snapshots:
   wait-on@9.1.0(debug@4.4.3)(supports-color@10.2.2):
     dependencies:
       axios: 1.20.0(debug@4.4.3)(supports-color@10.2.2)
-      joi: 18.2.3
+      joi: 18.3.1
       lodash: 4.18.1
       minimist: 1.2.8
       rxjs: 7.8.2

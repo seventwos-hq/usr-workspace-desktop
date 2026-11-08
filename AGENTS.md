@@ -15,7 +15,7 @@ TypeScript, React, Electron, Matrix JS SDK (Rust crypto via WASM). pnpm workspac
 
 ## Setup / Build / Test / Lint (from package.json / workflows)
 - Install: `pnpm install --frozen-lockfile` (unverified)
-- Fetch web bundle: `pnpm --filter seventwos-workspace-desktop fetch` (needs exact upstream tag; unverified)
+- Fetch web bundle: `pnpm --filter seventwos-workspace-desktop fetch v1.12.27 --cfgdir seventwos.org/release` (example matching the current desktop package version; requires GPG and a trusted upstream signing key; unverified)
 - Run: `pnpm --filter seventwos-workspace-desktop start` (unverified)
 - Build: `pnpm --filter seventwos-workspace-desktop build` (unverified)
 - Native: `pnpm --filter seventwos-workspace-desktop build:native` (unverified)
@@ -25,10 +25,10 @@ TypeScript, React, Electron, Matrix JS SDK (Rust crypto via WASM). pnpm workspac
 - i18n: `pnpm i18n`, `pnpm i18n:lint` (unverified)
 
 ## Branching
-Base branch: `develop`. Agents work on `card/<id>-<slug>` branches; never push to main/develop. Changes land via PR reviewed by Al (CPO).
+Base branch: `develop`. Agents work on `card/<id>-<slug>` branches; never push to main/develop. Changes land via PR with independent review under `.github/instructions/autonomous-review.instructions.md`; Al (CPO) signs off progression to Forgejo.
 
 ## Versioning
-Semver tags `vX.Y.Z`. Al signs off releases. See `packages/RELEASING.md`.
+Semver tags `vX.Y.Z`. Al's sign-off covers progression to Forgejo, not production release approval. Alvin retains production release approval; do not create tags or releases without that authorisation. See `packages/RELEASING.md` for upstream package mechanics, not release authority.
 
 ## Rules
 - Keep diffs small and focused.

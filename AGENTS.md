@@ -15,6 +15,7 @@ TypeScript, React, Electron, Matrix JS SDK (Rust crypto via WASM). pnpm workspac
 
 ## Setup / Build / Test / Lint (from package.json / workflows)
 - Install: `pnpm install --frozen-lockfile` (unverified)
+- Enable Git hooks after installation: `pnpm install:git-hooks` (runs Husky; required on fresh clones; unverified)
 - Fetch web bundle: `pnpm --filter seventwos-workspace-desktop run fetch v1.12.27 --cfgdir seventwos.org/release` (run the package script, not pnpm's built-in fetch; example matching the current desktop package version; requires GPG and a trusted upstream signing key; unverified)
 - Run: `pnpm --filter seventwos-workspace-desktop start` (unverified)
 - Build: `pnpm --filter seventwos-workspace-desktop build` (unverified)

@@ -84,4 +84,3 @@ We license the repository-owned code under the GNU Affero General Public License
 
 Our modifications and newly authored repository code use AGPL-3.0-only. When we distribute a modified version or make one available for users to interact with over a network, we provide the corresponding source as required by the AGPL.
 
-Third-party materials remain under their respective licences. The bundled [Graphify skill](https://github.com/seventwos-app/usr-workspace-desktop/tree/develop/.copilot/skills/graphify) is distributed under the Apache License 2.0; see its [licence](https://github.com/seventwos-app/usr-workspace-desktop/blob/develop/.copilot/skills/graphify/LICENSE), [notice](https://github.com/seventwos-app/usr-workspace-desktop/blob/develop/.copilot/skills/graphify/NOTICE), and [MIT notice](https://github.com/seventwos-app/usr-workspace-desktop/blob/develop/.copilot/skills/graphify/LICENSE-MIT).

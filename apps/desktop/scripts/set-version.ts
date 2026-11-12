@@ -13,7 +13,7 @@ Please see LICENSE in the repository root for full details.
 
 import { promises as fs } from "node:fs";
 import * as asar from "@electron/asar";
-import * as childProcess from "node:child_process";
+import * as path from "node:path";
 import * as url from "node:url";
 
 export async function versionFromAsar(): Promise<string> {
@@ -27,32 +27,15 @@ export async function versionFromAsar(): Promise<string> {
 }
 
 export async function setPackageVersion(ver: string): Promise<void> {
-    // set version in package.json: electron-builder will use this to populate
-    // all the various version fields
-    await new Promise<void>((resolve, reject) => {
-        childProcess.execFile(
-            process.platform === "win32" ? "pnpm.cmd" : "pnpm",
-            [
-                "version",
-                "-s",
-                "--no-git-tag-version", // This also means "don't commit to git" as it turns out
-                "--new-version",
-                ver,
-            ],
-            {
-                // We need shell mode on Windows to be able to launch `.cmd` executables
-                // See https://nodejs.org/en/blog/vulnerability/april-2024-security-releases-2
-                shell: process.platform === "win32",
-            },
-            (err) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            },
-        );
-    });
+    // Set version in package.json: electron-builder uses this to populate all the various version fields.
+    // We write the file directly rather than shelling out to `pnpm version`, as pnpm 11+ rejects the
+    // `--new-version` flag (and `pnpm version` semantics differ between pnpm majors).
+    const packageJsonPath = path.resolve(process.cwd(), "package.json");
+    const raw = await fs.readFile(packageJsonPath, "utf-8");
+    const packageJson = JSON.parse(raw);
+    packageJson.version = ver;
+    const indent = /^[ \t]+(?=")/m.exec(raw)?.[0] ?? "    ";
+    await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, indent) + (raw.endsWith("\n") ? "\n" : ""));
 }
 
 async function main(args: string[]): Promise<number> {

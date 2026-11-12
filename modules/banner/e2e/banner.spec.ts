@@ -76,7 +76,7 @@ test.describe("Banner", () => {
                             {
                                 icon_uri: "http://localhost:8080/app2.png",
                                 name: "Riot",
-                                link_url: "https://riot.im/app",
+                                link_url: "https://workspace.seventwos.org",
                                 target: "riot-im",
                             },
                         ],

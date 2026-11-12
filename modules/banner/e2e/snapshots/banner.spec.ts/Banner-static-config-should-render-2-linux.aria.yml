@@ -7,7 +7,7 @@
       - link "E-Mail":
             - /url: https://example.com/email
       - link "Riot":
-            - /url: https://riot.im/app
+            - /url: https://workspace.seventwos.org
       - heading "Links" [level=2]
       - link "Link":
             - /url: https://example.com/link1

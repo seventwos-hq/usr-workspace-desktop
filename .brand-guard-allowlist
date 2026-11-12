@@ -13,8 +13,6 @@ docs/jitsi.md	1
 docs/room-list.md	1
 docs/theming.md	1
 docs/usercontent.md	1
-modules/banner/e2e/banner.spec.ts	1
-modules/banner/e2e/snapshots/banner.spec.ts/Banner-static-config-should-render-2-linux.aria.yml	1
 packages/module-api/package.json	1
 packages/shared-components/package.json	1
 packages/shared-components/README.md	1

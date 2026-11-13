@@ -202,7 +202,7 @@ const config: Omit<Writable<Configuration>, "electronFuses"> & {
             await fsp.access(path.join(context.appDir, "webapp.asar"), fs.constants.F_OK);
         } catch (err) {
             console.error("The webapp.asar archive is missing. Building without a webapp is fruitless.");
-            console.log("See apps/desktop/README.md#providing-the-upstream-web-bundle.");
+            console.log("Build apps/web and run `pnpm run package-webapp` (see apps/desktop/README.md#providing-the-web-ui).");
             throw err;
         }
         return true; // Continue build

@@ -1,0 +1,51 @@
+name: pr-check
+on:
+    pull_request:
+        branches: [develop]
+
+concurrency:
+    group: pr-check-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    check:
+        # The runner executes one job at a time and has a 10 GB limit: keep everything in one sequential job.
+        runs-on: dev-vm
+        timeout-minutes: 60
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Brand guard
+              run: scripts/brand-guard.sh
+
+            - name: Upstream policy
+              run: |
+                  python3 scripts/upstream/validate_policy.py
+                  python3 -m unittest discover -s scripts/upstream
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build web app from source
+              env:
+                  NODE_OPTIONS: --max-old-space-size=4096
+              run: pnpm --filter element-web build
+
+            - name: Type-check web and desktop
+              env:
+                  NODE_OPTIONS: --max-old-space-size=4096
+              run: |
+                  pnpm --filter element-web lint:types
+                  pnpm --filter seventwos-workspace-desktop exec tsc --noEmit
+
+            - name: Check that desktop packaging uses the local web build
+              working-directory: apps/desktop
+              run: |
+                  node scripts/package-webapp.ts --cfgdir "" --no-set-version
+                  test -s webapp.asar
+                  ! grep -rn "fetch-package\|importkey" package.json scripts
+
+            - name: Web unit tests
+              env:
+                  NODE_OPTIONS: --max-old-space-size=4096
+              run: pnpm --filter element-web test -- --maxWorkers=1

@@ -3,9 +3,9 @@
   "mappings": [
     {
       "upstream": "apps/web/**",
-      "local": null,
-      "mode": "forbidden",
-      "reason": "The browser application is supplied only as a separately pinned release bundle."
+      "local": "apps/web/**",
+      "mode": "protected-divergence",
+      "reason": "The browser application is built from this repository; Seventwos branding and configuration are repository-owned, upstream changes are reviewed individually."
     },
     {
       "upstream": "apps/desktop/**",

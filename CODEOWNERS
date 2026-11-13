@@ -6,7 +6,7 @@
 /.github/workflows/ @a-tcp
 
 # Desktop shell and separately pinned bundle selection.
-/apps/desktop/scripts/fetch-package.ts @a-tcp
+/apps/desktop/scripts/package-webapp.ts @a-tcp
 /apps/desktop/electron-builder.ts @a-tcp
 /apps/desktop/package.json @a-tcp
 

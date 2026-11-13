@@ -8,7 +8,7 @@ Please see LICENSE files in the repository root for full details.
 import webpack from "webpack";
 import * as fs from "node:fs/promises";
 import path from "node:path";
-import _ from "lodash";
+import { merge } from "lodash";
 import { type Translations } from "matrix-web-i18n";
 
 interface Options {
@@ -76,7 +76,7 @@ export class I18nWebpackPlugin {
                             if (await exists(f)) {
                                 try {
                                     const content = await fs.readFile(f, "utf-8");
-                                    translations = _.merge(translations, JSON.parse(content));
+                                    translations = merge(translations, JSON.parse(content));
                                     compilation.fileDependencies.add(f);
                                 } catch (e) {
                                     compilation.errors.push(

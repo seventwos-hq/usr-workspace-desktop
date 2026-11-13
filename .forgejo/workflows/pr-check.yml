@@ -26,4 +26,5 @@ jobs:
       # report-only: develop already fails desktop lint:types (src/vectormenu.test.ts: Cannot find name KeyboardEvent)
       - run: pnpm -r --workspace-concurrency=1 lint:types
         continue-on-error: true
-      - run: pnpm test:unit
+      # desktop unit tests only: root test:unit also runs browser (playwright) projects that need chromium, absent on the runner
+      - run: pnpm --filter seventwos-workspace-desktop exec vitest run

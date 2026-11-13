@@ -20,6 +20,8 @@ jobs:
       npm_config_network_concurrency: "6"
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Trust workspace (container runs as another uid than checkout)
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Brand guard

@@ -20,8 +20,12 @@ vi.mock("electron-store", () => {
         public get(key: string, defaultValue?: unknown): unknown {
             return backing.has(key) ? backing.get(key) : defaultValue;
         }
-        public set(key: string, value: unknown): void {
-            backing.set(key, value);
+        public set(key: string | Record<string, unknown>, value?: unknown): void {
+            if (typeof key === "object") {
+                for (const [k, v] of Object.entries(key)) backing.set(k, v);
+            } else {
+                backing.set(key, value);
+            }
         }
         public has(key: string): boolean {
             return backing.has(key);

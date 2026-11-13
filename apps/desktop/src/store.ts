@@ -162,6 +162,10 @@ class SafeStorageWriter extends StorageWriter {
         super.delete(key);
     }
 
+    public cancelPendingSets(): void {
+        this.pendingSets.clear();
+    }
+
     public async get(key: string): Promise<string | undefined> {
         const ciphertext = this.store.get<string, string | undefined>(this.getKey(key));
         if (!ciphertext) {
@@ -268,6 +272,11 @@ class Store extends ElectronStore<StoreData> {
     // Provides "raw" access to the underlying secrets storage,
     // should be avoided in favour of the getSecret/setSecret/deleteSecret methods.
     private secrets?: StorageWriter;
+
+    public override clear(): void {
+        if (this.secrets instanceof SafeStorageWriter) this.secrets.cancelPendingSets();
+        super.clear();
+    }
 
     private constructor(private mode: Mode) {
         super({
@@ -571,15 +580,18 @@ class Store extends ElectronStore<StoreData> {
      *     as `safeStorage.getSelectedStorageBackend` only exists on Linux.
      */
     private async migratePlaintextToEncrypted(backend: SaneSafeStorageBackend): Promise<void> {
-        const secrets = new SafeStorageWriter(this);
         console.info(`Finishing safeStorage migration to ${backend}`);
         const data = this.get("safeStorage");
         if (data) {
+            const encrypted: [string, string][] = [];
             for (const key in data) {
-                await secrets.set(key, data[key]);
+                const ciphertext = await safeStorage.encryptStringAsync(data[key]);
+                encrypted.push([key.replaceAll(".", "-"), ciphertext.toString("base64")]);
             }
+            this.set({ safeStorage: Object.fromEntries(encrypted), safeStorageBackend: backend });
+        } else {
+            this.recordSafeStorageBackend(backend);
         }
-        this.recordSafeStorageBackend(backend);
     }
 
     /**

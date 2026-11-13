@@ -20,8 +20,18 @@ vi.mock("electron-store", () => {
         public get(key: string, defaultValue?: unknown): unknown {
             return backing.has(key) ? backing.get(key) : defaultValue;
         }
-        public set(key: string, value: unknown): void {
+        public set(key: string | Record<string, unknown>, value?: unknown): void {
+            if (typeof key !== "string") {
+                for (const [name, entry] of Object.entries(key)) this.set(name, entry);
+                return;
+            }
             backing.set(key, value);
+            if (key === "safeStorage" && value && typeof value === "object") {
+                for (const name of backing.keys()) {
+                    if (name.startsWith("safeStorage.")) backing.delete(name);
+                }
+                for (const [name, entry] of Object.entries(value)) backing.set(`safeStorage.${name}`, entry);
+            }
         }
         public has(key: string): boolean {
             return backing.has(key);
@@ -200,6 +210,27 @@ describe("Store secret encryption (safeStorage)", () => {
             await set;
 
             expect(backing.has(STORED_KEY)).toBe(false);
+        });
+
+        it("does not recreate any secrets cleared while they were still being encrypted", async () => {
+            const store = freshStore();
+            await store.prepareSafeStorage(SESSION);
+            const releaseFirst = holdNextEncryption();
+            const releaseSecond = holdNextEncryption();
+            const first = store.setSecret(KEY, "first");
+            const second = store.setSecret("other", "second");
+            await vi.waitFor(() => expect(safeStorage.encryptStringAsync).toHaveBeenCalledTimes(2));
+            const electronSession = {
+                flushStorageData: vi.fn(),
+                clearStorageData: vi.fn(),
+            } as unknown as Electron.Session;
+
+            await clearData(electronSession);
+            releaseFirst();
+            releaseSecond();
+            await Promise.all([first, second]);
+
+            expect(backing.size).toBe(0);
         });
 
         it("stores a secret set after a delete which superseded an earlier set", async () => {
@@ -446,6 +477,55 @@ describe("Store secret encryption (safeStorage)", () => {
                 await expect(store.getSecret("good")).resolves.toBe("goodsecret");
             },
         );
+
+        it("leaves all plaintext untouched on failure and migrates the original secrets after restart", async () => {
+            const data = { first: "firstsecret", second: "secondsecret" };
+            backing.set("safeStorage", data);
+            backing.set("safeStorage.first", data.first);
+            backing.set("safeStorage.second", data.second);
+            const started = Promise.withResolvers<void>();
+            const pending = Promise.withResolvers<Buffer>();
+            vi.mocked(safeStorage.encryptStringAsync)
+                .mockResolvedValueOnce(Buffer.from(PREFIX + data.first, "utf8"))
+                .mockImplementationOnce(() => {
+                    started.resolve();
+                    return pending.promise;
+                });
+            const store = freshStore();
+            const failed = expect(store.prepareSafeStorage(SESSION)).rejects.toThrow("keychain unavailable");
+            await started.promise;
+
+            expect(backing.get("safeStorage")).toEqual(data);
+            expect(backing.get("safeStorage.first")).toBe(data.first);
+            expect(backing.get("safeStorage.second")).toBe(data.second);
+            expect(backing.get("safeStorageBackend")).toBe("plaintext");
+
+            pending.reject(new Error("keychain unavailable"));
+            await failed;
+
+            expect(backing.get("safeStorage")).toEqual(data);
+            expect(backing.get("safeStorage.first")).toBe(data.first);
+            expect(backing.get("safeStorage.second")).toBe(data.second);
+            expect(backing.get("safeStorageBackend")).toBe("plaintext");
+
+            vi.mocked(safeStorage.encryptStringAsync).mockClear();
+            const restarted = freshStore();
+            const setSpy = vi.spyOn(restarted, "set");
+            try {
+                await expect(restarted.prepareSafeStorage(SESSION)).resolves.toBe(true);
+
+                expect(safeStorage.encryptStringAsync).toHaveBeenNthCalledWith(1, data.first);
+                expect(safeStorage.encryptStringAsync).toHaveBeenNthCalledWith(2, data.second);
+                expect(setSpy).toHaveBeenCalledExactlyOnceWith({
+                    safeStorage: { first: encrypted(data.first), second: encrypted(data.second) },
+                    safeStorageBackend: "gnome_libsecret",
+                });
+                await expect(restarted.getSecret("first")).resolves.toBe(data.first);
+                await expect(restarted.getSecret("second")).resolves.toBe(data.second);
+            } finally {
+                setSpy.mockRestore();
+            }
+        });
 
         it("does nothing when there are no secrets to migrate", async () => {
             const store = freshStore();

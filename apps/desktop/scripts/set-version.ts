@@ -13,7 +13,7 @@ Please see LICENSE in the repository root for full details.
 
 import { promises as fs } from "node:fs";
 import * as asar from "@electron/asar";
-import * as path from "node:path";
+import path from "node:path";
 import * as url from "node:url";
 
 export async function versionFromAsar(): Promise<string> {

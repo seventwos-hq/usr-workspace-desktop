@@ -141,10 +141,6 @@ class SafeStorageWriter extends StorageWriter {
      */
     private readonly pendingSets = new Map<string, object>();
 
-    public invalidatePendingSets(): void {
-        this.pendingSets.clear();
-    }
-
     public async set(key: string, secret: string): Promise<void> {
         const storeKey = this.getKey(key);
         const token = {};
@@ -323,11 +319,6 @@ class Store extends ElectronStore<StoreData> {
                 },
             },
         });
-    }
-
-    public override clear(): void {
-        if (this.secrets instanceof SafeStorageWriter) this.secrets.invalidatePendingSets();
-        super.clear();
     }
 
     private safeStorageReadyPromise?: Promise<boolean>;
@@ -580,17 +571,15 @@ class Store extends ElectronStore<StoreData> {
      *     as `safeStorage.getSelectedStorageBackend` only exists on Linux.
      */
     private async migratePlaintextToEncrypted(backend: SaneSafeStorageBackend): Promise<void> {
+        const secrets = new SafeStorageWriter(this);
         console.info(`Finishing safeStorage migration to ${backend}`);
         const data = this.get("safeStorage");
         if (data) {
-            const encrypted: Record<string, string> = {};
             for (const key in data) {
-                encrypted[key] = (await safeStorage.encryptStringAsync(data[key])).toString("base64");
+                await secrets.set(key, data[key]);
             }
-            this.set({ safeStorage: encrypted, safeStorageBackend: backend });
-        } else {
-            this.recordSafeStorageBackend(backend);
         }
+        this.recordSafeStorageBackend(backend);
     }
 
     /**

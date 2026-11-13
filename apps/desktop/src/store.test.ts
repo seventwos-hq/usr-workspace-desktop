@@ -187,7 +187,7 @@ describe("Store secret encryption (safeStorage)", () => {
             const second = store.setSecret(KEY, "second");
             await second;
             release();
-            await first;
+            await expect(first).rejects.toThrow("superseded");
 
             expect(backing.get(STORED_KEY)).toBe(encrypted("second"));
         });
@@ -197,7 +197,18 @@ describe("Store secret encryption (safeStorage)", () => {
             const set = store.setSecret(KEY, "s3cr3t");
             await store.deleteSecret(KEY);
             release();
-            await set;
+            await expect(set).rejects.toThrow("superseded");
+
+            expect(backing.has(STORED_KEY)).toBe(false);
+        });
+
+        it("does not recreate a secret when the store is cleared while it was still being encrypted", async () => {
+            const release = holdNextEncryption();
+            const set = store.setSecret(KEY, "s3cr3t");
+            await vi.waitFor(() => expect(safeStorage.encryptStringAsync).toHaveBeenCalled());
+            store.clear();
+            release();
+            await expect(set).rejects.toThrow("cancelled");
 
             expect(backing.has(STORED_KEY)).toBe(false);
         });
@@ -208,7 +219,7 @@ describe("Store secret encryption (safeStorage)", () => {
             await store.deleteSecret(KEY);
             await store.setSecret(KEY, "second");
             release();
-            await first;
+            await expect(first).rejects.toThrow("superseded");
 
             await expect(store.getSecret(KEY)).resolves.toBe("second");
         });
@@ -446,6 +457,24 @@ describe("Store secret encryption (safeStorage)", () => {
                 await expect(store.getSecret("good")).resolves.toBe("goodsecret");
             },
         );
+
+        it("leaves plaintext data and marker untouched when a later encryption fails", async () => {
+            backing.set("safeStorage", { a: "secreta", b: "secretb" });
+            backing.set("safeStorage.a", "secreta");
+            backing.set("safeStorage.b", "secretb");
+            vi.mocked(safeStorage.encryptStringAsync)
+                .mockRejectedValueOnce(new Error("keychain unavailable"))
+                .mockRejectedValueOnce(new Error("keychain unavailable"));
+            vi.mocked(safeStorage.encryptStringAsync).mockImplementationOnce(async (p: string) =>
+                Buffer.from(PREFIX + p, "utf8"),
+            );
+
+            const failing = freshStore();
+            await expect(failing.prepareSafeStorage(SESSION)).rejects.toThrow();
+            expect(backing.get("safeStorage.a")).toBe("secreta");
+            expect(backing.get("safeStorage.b")).toBe("secretb");
+            expect(backing.get("safeStorageBackend")).toBe("plaintext");
+        });
 
         it("does nothing when there are no secrets to migrate", async () => {
             const store = freshStore();

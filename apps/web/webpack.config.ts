@@ -750,8 +750,7 @@ export default (env: string, argv: Record<string, any>): webpack.Configuration =
             // case of build failures
             hot: "only",
 
-            // Disable host check
-            allowedHosts: "all",
+            allowedHosts: "auto",
         },
     };
 };

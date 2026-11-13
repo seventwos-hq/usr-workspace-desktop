@@ -149,7 +149,8 @@ class SafeStorageWriter extends StorageWriter {
             const ciphertext = await safeStorage.encryptStringAsync(secret);
             // A later set() or delete() of this key has been called while we were encrypting, so
             // our value is already out of date: drop it rather than overwrite the newer one.
-            if (this.pendingSets.get(storeKey) !== token) return;
+            // Reject rather than silently succeed so the caller knows the secret was NOT persisted.
+            if (this.pendingSets.get(storeKey) !== token) throw new Error("safeStorage write superseded or cancelled");
             this.store.set(storeKey, ciphertext.toString("base64"));
         } finally {
             if (this.pendingSets.get(storeKey) === token) this.pendingSets.delete(storeKey);
@@ -160,6 +161,16 @@ class SafeStorageWriter extends StorageWriter {
         // Supersede any set() of this key which is still encrypting, so it can't recreate the secret.
         this.pendingSets.delete(this.getKey(key));
         super.delete(key);
+    }
+
+    /** Invalidate every set() which is still encrypting, e.g. when the whole store is cleared. */
+    public cancelPending(): void {
+        this.pendingSets.clear();
+    }
+
+    /** Encrypt a secret without touching the store. */
+    public async encrypt(secret: string): Promise<string> {
+        return (await safeStorage.encryptStringAsync(secret)).toString("base64");
     }
 
     public async get(key: string): Promise<string | undefined> {
@@ -268,6 +279,12 @@ class Store extends ElectronStore<StoreData> {
     // Provides "raw" access to the underlying secrets storage,
     // should be avoided in favour of the getSecret/setSecret/deleteSecret methods.
     private secrets?: StorageWriter;
+
+    public override clear(): void {
+        // Pending encryptions must not write their secrets back after the store has been cleared.
+        if (this.secrets instanceof SafeStorageWriter) this.secrets.cancelPending();
+        super.clear();
+    }
 
     private constructor(private mode: Mode) {
         super({
@@ -575,9 +592,14 @@ class Store extends ElectronStore<StoreData> {
         console.info(`Finishing safeStorage migration to ${backend}`);
         const data = this.get("safeStorage");
         if (data) {
+            // Encrypt everything before touching the store, so a failure part-way leaves the plaintext
+            // data and its "plaintext" marker intact and the migration can simply be retried.
+            const encrypted = new Map<string, string>();
             for (const key in data) {
-                await secrets.set(key, data[key]);
+                encrypted.set(secrets.getKey(key), await secrets.encrypt(data[key]));
             }
+            // No awaits from here: persist the ciphertext and the backend marker together.
+            for (const [key, value] of encrypted) this.set(key, value);
         }
         this.recordSafeStorageBackend(backend);
     }

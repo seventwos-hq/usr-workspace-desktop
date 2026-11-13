@@ -7,7 +7,8 @@ Seventwos Workspace for Desktop: Electron desktop client for the Seventwos works
 TypeScript, React, Electron, Matrix JS SDK (Rust crypto via WASM). pnpm workspaces + Nx, Vitest, Playwright, oxlint/oxfmt, knip. Node per `.node-version` (24).
 
 ## Layout
-- `apps/desktop` - Electron app (was element-desktop). Packages a pre-built Element Web bundle (`apps/desktop/scripts/fetch-package.ts`); `apps/web` was removed and must not be restored.
+- `apps/desktop` - Electron app (was element-desktop). Packages the web UI built from `apps/web` (`apps/desktop/scripts/package-webapp.ts`); nothing is downloaded.
+- `apps/web` - the browser application (Element Web v1.12.27 base, Seventwos branding), built from source.
 - `packages/` - module-api, shared-components, shared-types, shared-utils, playwright-common
 - `modules/` - optional modules (banner, restricted-guests, widget-lifecycle, widget-toggles)
 - `.seventwos/` - upstream sync policy/ledger/path map (repo-owned; edit carefully)

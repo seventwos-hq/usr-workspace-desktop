@@ -46,3 +46,4 @@ storybook-static
 
 # Generated Graphify knowledge graph
 graphify-out/
+__pycache__/

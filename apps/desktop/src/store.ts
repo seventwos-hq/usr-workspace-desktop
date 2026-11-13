@@ -598,8 +598,10 @@ class Store extends ElectronStore<StoreData> {
             for (const key in data) {
                 encrypted.set(secrets.getKey(key), await secrets.encrypt(data[key]));
             }
-            // No awaits from here: persist the ciphertext and the backend marker together.
-            for (const [key, value] of encrypted) this.set(key, value);
+            // Persist the ciphertext and the backend marker in a single atomic store write, so a crash
+            // can never leave ciphertext on disk under the "plaintext" marker.
+            this.set({ ...Object.fromEntries(encrypted), safeStorageBackend: backend } as unknown as StoreData);
+            return;
         }
         this.recordSafeStorageBackend(backend);
     }

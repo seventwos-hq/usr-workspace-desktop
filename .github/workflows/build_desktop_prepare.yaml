@@ -7,21 +7,13 @@ on:
                 type: string
                 required: true
                 description: "Repository-relative config directory under apps/desktop"
-            web-bundle-url:
-                type: string
-                required: true
-                description: "Exact HTTPS URL of the explicitly selected upstream web bundle"
-            web-bundle-sha256:
-                type: string
-                required: true
-                description: "Expected lowercase or uppercase SHA-256 digest of the web bundle"
 
 permissions:
     contents: read
 
 jobs:
     prepare:
-        name: Verify and prepare pinned web bundle
+        name: Build web app from source and prepare desktop inputs
         runs-on: ubuntu-24.04
         steps:
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -38,39 +30,29 @@ jobs:
               shell: bash
               env:
                   CONFIG: ${{ inputs.config }}
-                  WEB_BUNDLE_URL: ${{ inputs.web-bundle-url }}
-                  WEB_BUNDLE_SHA256: ${{ inputs.web-bundle-sha256 }}
               run: |
                   set -euo pipefail
                   [[ "$CONFIG" == "seventwos.org/release" || "$CONFIG" == "seventwos.org/preview" ]]
-                  [[ "$WEB_BUNDLE_URL" == https://* ]]
-                  [[ "$WEB_BUNDLE_SHA256" =~ ^[[:xdigit:]]{64}$ ]]
                   test -f "apps/desktop/$CONFIG/build.json"
                   test -f "apps/desktop/$CONFIG/config.json"
-                  python3 scripts/upstream/validate_policy.py \
-                      --selection-url "$WEB_BUNDLE_URL" \
-                      --selection-sha256 "$WEB_BUNDLE_SHA256"
+                  python3 scripts/upstream/validate_policy.py
 
-            - name: Install desktop dependencies
-              run: pnpm install --frozen-lockfile --filter seventwos-workspace-desktop
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile --filter seventwos-workspace-desktop... --filter element-web...
 
-            - name: Download and verify pinned upstream web bundle
+            - name: Build web app from source
+              env:
+                  NODE_OPTIONS: --max-old-space-size=4096
+              run: pnpm --filter element-web build
+
+            - name: Package local web build
               working-directory: apps/desktop
               shell: bash
               env:
                   CONFIG: ${{ inputs.config }}
-                  WEB_BUNDLE_URL: ${{ inputs.web-bundle-url }}
-                  WEB_BUNDLE_SHA256: ${{ inputs.web-bundle-sha256 }}
               run: |
                   set -euo pipefail
-                  curl --fail --location --proto '=https' --tlsv1.2 \
-                      --output web-bundle.tar.gz "$WEB_BUNDLE_URL"
-                  EXPECTED_SHA256=$(printf '%s' "$WEB_BUNDLE_SHA256" | tr '[:upper:]' '[:lower:]')
-                  printf '%s  %s\n' "$EXPECTED_SHA256" web-bundle.tar.gz | sha256sum --check
-                  mkdir webapp
-                  tar xzf web-bundle.tar.gz -C webapp --strip-components=1
-                  cp "$CONFIG/config.json" webapp/config.json
-                  pnpm exec asar pack webapp webapp.asar
+                  node scripts/package-webapp.ts --cfgdir "$CONFIG" --no-set-version
                   cp "$CONFIG/build.json" variant.json
 
             - name: Generate native cache inputs

@@ -39,8 +39,10 @@ catalog:
   vite-plugin-node-polyfills: 0.28.0
   vite-plugin-svgr: 5.2.0
   vitest: 4.1.11
+  "@vitest/spy": 4.1.11
   "@vitest/coverage-v8": 4.1.11
   "@vitest/browser-playwright": 4.1.11
+  "@vitest/browser": 4.1.11
   "@vitejs/plugin-react": 6.1.1
   unplugin-dts: 1.1.0
   # nx
@@ -97,14 +99,22 @@ allowBuilds:
   "@parcel/watcher": false
 
 patchedDependencies:
+  # Workaround for missing types export
+  "@vector-im/matrix-wysiwyg": patches/@vector-im__matrix-wysiwyg.patch
   # Workaround for lack of React 19 support
   react-blurhash: patches/react-blurhash.patch
   # Workaround for https://github.com/nfrasser/linkifyjs/issues/429
   linkify-html: patches/linkify-html.patch
   # Workaround to access a private API
   "@types/auto-launch": patches/@types__auto-launch.patch
+  # Workaround for jest still using commonjs and not being able to use the ESM version of await-lock
+  await-lock: patches/await-lock.patch
+  # Workaround for global type mismatches
+  jest-fixed-jsdom: patches/jest-fixed-jsdom.patch
   # Workaround for jsdom being super opinionated and making it hard to tweak global properties
   jsdom: patches/jsdom.patch
+  # Workaround for missing return types
+  postcss-mixins: patches/postcss-mixins.patch
   # Workaround for some babel rules being false positively flagged
   knip: patches/knip.patch
   # Workaround for being stuck on an old version of plist due to electron-builder not supporting ESM yet

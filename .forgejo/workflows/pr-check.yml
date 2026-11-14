@@ -4,7 +4,7 @@ permissions:
   contents: read
 jobs:
   pr-check:
-    runs-on: dev-vm
+    runs-on: dev-vm-heavy
     container: node:24-bookworm
     timeout-minutes: 40
     env:

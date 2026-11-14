@@ -2,15 +2,25 @@
 # apps/web baseline: i18n keys are English text (kept as keys); test fixtures/snapshots assert upstream behaviour.
 # ---baseline---
 apps/desktop/CHANGELOG.md	8
+apps/web/build_config.sample.yaml	1
+apps/web/debian/control	2
+apps/web/element.io/app/config.json	6
+apps/web/element.io/develop/config.json	6
+apps/web/element.io/README	3
 apps/web/package.json	1
 apps/web/playwright/e2e/crypto/test_indexeddb_cryptostore_dump/dump.json	67
-apps/web/res/manifest.json	2
+apps/web/res/themes/dark/css/_dark.pcss	1
+apps/web/res/themes/legacy-dark/css/_legacy-dark.pcss	1
+apps/web/res/themes/legacy-light/css/_legacy-light.pcss	1
+apps/web/res/themes/light/css/_light.pcss	1
+apps/web/res/themes/light-high-contrast/css/_light-high-contrast.pcss	1
 apps/web/src/async-components/structures/__snapshots__/ErrorView.test.tsx.snap	4
 apps/web/src/components/structures/auth/__snapshots__/CompleteSecurity.test.tsx.snap	4
 apps/web/src/components/structures/__snapshots__/MatrixChat.test.tsx.snap	3
 apps/web/src/components/views/auth/__snapshots__/AuthFooter.test.tsx.snap	1
 apps/web/src/components/views/auth/__snapshots__/AuthPage.test.tsx.snap	1
 apps/web/src/components/views/dialogs/ChangelogDialog.test.tsx	2
+apps/web/src/components/views/dialogs/ChangelogDialog.tsx	1
 apps/web/src/components/views/dialogs/CreateSectionDialog.test.tsx	1
 apps/web/src/components/views/dialogs/__snapshots__/ConfirmKeyStorageOffDialog.test.tsx.snap	1
 apps/web/src/components/views/dialogs/__snapshots__/LogoutDialog.test.tsx.snap	3
@@ -71,7 +81,6 @@ apps/web/src/stores/room-list-v3/section.test.ts	15
 apps/web/src/stores/room-list-v3/section.ts	1
 apps/web/src/stores/widgets/ElementWidgetDriver.test.ts	1
 apps/web/src/stores/widgets/WidgetPermissionStore.test.ts	1
-apps/web/src/utils/pdfLinkService.test.ts	2
 apps/web/src/utils/UrlUtils.test.ts	2
 apps/web/src/utils/WidgetUtils.test.ts	2
 apps/web/src/vector/app.test.ts	2

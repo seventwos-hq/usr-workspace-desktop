@@ -1,0 +1,5 @@
+title = "usr-workspace-desktop gitleaks config"
+
+[extend]
+useDefault = true
+

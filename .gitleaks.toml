@@ -1,0 +1,20 @@
+title = "usr-workspace-desktop gitleaks config"
+
+[extend]
+useDefault = true
+
+# Upstream Element web v1.12.28 import (apps/web): public/non-secret values that
+# trip generic-api-key. Scoped to that one rule and these exact files only.
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "Upstream Element web public keys, test fixtures and sample config"
+paths = [
+  '''^apps/web/playwright/e2e/crypto/test_indexeddb_cryptostore_dump/dump\.json$''',
+  '''^apps/web/element\.io/app/config\.json$''',
+  '''^apps/web/element\.io/develop/config\.json$''',
+  '''^apps/web/src/stores/widgets/ElementWidgetDriver\.test\.ts$''',
+  '''^apps/web/config\.sample\.json$''',
+  '''^apps/web/src/Searching\.ts$''',
+]

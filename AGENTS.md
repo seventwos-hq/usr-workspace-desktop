@@ -44,3 +44,13 @@ Semver tags `vX.Y.Z`. Al's sign-off covers progression to Forgejo, not productio
 - pnpm `minimumReleaseAgeStrict` is on; new dependency versions may be rejected if too fresh.
 - CI lives only in GitHub Actions (no Forgejo workflows).
 - Root `postinstall` links packages (`scripts/pnpm-link.ts`).
+
+## UI changes need screenshots
+
+Any user-visible change (screens, layout, styling, branding, text, flows) must include:
+
+- An "after" screenshot of every changed screen, and a "before" screenshot when an existing screen changed.
+- Desktop: capture the Electron window (not the whole screen).
+- Use realistic data, not empty states.
+- Attach screenshots to the Notion card and to the PR description.
+- Missing screenshots = not approved.

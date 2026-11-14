@@ -3,14 +3,6 @@ name: Build Seventwos Desktop Artifacts
 on:
     workflow_dispatch:
         inputs:
-            web_bundle_url:
-                description: "Exact HTTPS URL of the pinned upstream web bundle"
-                required: true
-                type: string
-            web_bundle_sha256:
-                description: "SHA-256 digest of the pinned upstream web bundle"
-                required: true
-                type: string
             variant:
                 description: "Seventwos desktop build variant"
                 required: true
@@ -49,8 +41,6 @@ jobs:
             contents: read
         with:
             config: seventwos.org/${{ inputs.variant }}
-            web-bundle-url: ${{ inputs.web_bundle_url }}
-            web-bundle-sha256: ${{ inputs.web_bundle_sha256 }}
 
     windows:
         if: inputs.windows

@@ -6,7 +6,7 @@ Please see LICENSE files in the repository root for full details.
 */
 
 /*
- * Shared code that is used by the mobile guide and the mobile.element.io site.
+ * Shared code that is used by the mobile guide and the the Seventwos mobile site site.
  */
 
 export enum MobileAppVariant {
@@ -77,7 +77,7 @@ export function updateMobilePage(metadata: MobileAppMetadata, deepLinkUrl: strin
     const step1Heading = document.getElementById("step1_heading")!;
     step1Heading.innerHTML = step1Heading.innerHTML.replace("Element", metadata.name);
 
-    // Step 2 is only shown on the mobile guide, not on mobile.element.io
+    // Step 2 is only shown on the mobile guide, not on the Seventwos mobile site
     if (document.getElementById("step2_container")) {
         document.getElementById("step2_container")!.style.display = "block";
         if (metadata.isProApp) {

@@ -247,7 +247,7 @@ export default class WebPlatform extends BasePlatform {
         // strip query-string and fragment from uri
         const url = new URL(window.location.href);
 
-        // `appName` in the format `develop.element.io/abc/xyz`
+        // `appName` in the format `develop.seventwos.org/abc/xyz`
         const appName = [
             url.host,
             url.pathname.replace(/\/$/, ""), // Remove trailing slash if present

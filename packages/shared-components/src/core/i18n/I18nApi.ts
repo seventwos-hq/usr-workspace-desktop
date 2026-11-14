@@ -14,7 +14,7 @@ import {
 } from "@element-hq/element-web-module-api";
 
 import { humanizeTime } from "../utils/humanize";
-import { _t, getLocale, registerTranslations, type RichVariables } from "./i18n";
+import { _t, getLocale, registerTranslations } from "./i18n";
 
 export class I18nApi implements II18nApi {
     /**
@@ -53,7 +53,7 @@ export class I18nApi implements II18nApi {
     public translate(this: void, key: TranslationKey, variables: Variables | undefined, tags: Tags): React.ReactNode;
     public translate(this: void, key: TranslationKey, variables?: Variables, tags?: Tags): React.ReactNode | string {
         if (tags) return _t(key, variables, tags);
-        return _t(key, variables as RichVariables);
+        return _t(key, variables!);
     }
 
     public humanizeTime = (timeMillis: number): string => humanizeTime(timeMillis, this);

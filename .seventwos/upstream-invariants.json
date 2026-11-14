@@ -2,19 +2,14 @@
   "schemaVersion": 1,
   "invariants": [
     {
-      "id": "no-apps-web",
+      "id": "web-app-in-repo",
       "severity": "error",
-      "statement": "apps/web must remain absent from the repository."
+      "statement": "apps/web is required and must be built from this repository's source; the desktop client must package that local build."
     },
     {
-      "id": "immutable-bundle-only",
+      "id": "no-downloaded-web-bundle",
       "severity": "error",
-      "statement": "A selected bundle must use an immutable release tag, exact HTTPS URL, and SHA-256 digest."
-    },
-    {
-      "id": "verified-selection-evidence",
-      "severity": "error",
-      "statement": "Signature, provenance, rollback, capability-denial, network-destination, visual, and existing-profile migration evidence must pass before selection."
+      "statement": "Desktop packaging must not download a prebuilt web bundle or depend on an upstream release key."
     },
     {
       "id": "protect-seventwos-divergence",
@@ -24,7 +19,7 @@
     {
       "id": "assessment-only",
       "severity": "error",
-      "statement": "Upstream assessment automation may report candidates but may not apply changes, merge, publish, or update bundle selection."
+      "statement": "Upstream assessment automation may report candidates but may not apply changes, merge, or publish."
     },
     {
       "id": "append-only-ledger",

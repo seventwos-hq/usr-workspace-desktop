@@ -1,6 +1,6 @@
 {
-    "name": "Element",
-    "short_name": "Element",
+    "name": "Seventwos Workspace",
+    "short_name": "Seventwos",
     "display": "standalone",
     "theme_color": "#76CFA6",
     "start_url": "index.html",

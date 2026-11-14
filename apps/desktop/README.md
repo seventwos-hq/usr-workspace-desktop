@@ -3,7 +3,7 @@
 # Seventwos Workspace for Desktop
 
 This package is the Electron wrapper app for the Seventwos Workspace desktop client. It is inherited from
-Element Desktop and, at this stage, still packages the upstream Element Web webapp bundle. See the
+Element Desktop and packages the web UI built from `apps/web` in this repository. See the
 [repository README](../../README.md) for the Seventwos Workspace rebrand status and provenance.
 
 # First Steps
@@ -14,26 +14,15 @@ Before you do anything else, fetch the dependencies:
 pnpm install
 ```
 
-# Providing the upstream web bundle
+# Providing the web UI
 
-This repository deliberately does not contain `apps/web`. The Electron wrapper is not independent of a web UI bundle:
-every build must opt in to an exact upstream release or provide a separately verified bundle.
-
-```
-# Fetch and verify an exact signed upstream release, then apply the Seventwos release config.
-pnpm run fetch --cfgdir seventwos.org/release v1.12.27
-```
-
-Importing the upstream release key is a separate, explicit operation:
+The Electron wrapper packages the web UI built from source in `apps/web`. Nothing is downloaded.
 
 ```
-pnpm run fetch --importkey
+# Build the web app, then pack it with the Seventwos release config.
+pnpm --filter element-web build
+pnpm run package-webapp --cfgdir seventwos.org/release
 ```
-
-Custom HTTPS bundle URLs are supported for local work, but the fetch script cannot authenticate them. Verify the
-bundle independently before use. Release CI instead requires both an exact HTTPS URL and SHA-256 digest.
-
-Moving `develop` bundles and implicit version selection are rejected. Do not add or depend on `apps/web`.
 
 # Building
 
@@ -53,7 +42,7 @@ pnpm run build
 This will do a couple of things:
 
 - Run the `setversion` script to set the local package version to match whatever
-  version of the upstream bundle you installed above.
+  version of the locally built web app.
 - Run electron-builder to build a package. The package built will match the operating system
   you're running the build process on.
 

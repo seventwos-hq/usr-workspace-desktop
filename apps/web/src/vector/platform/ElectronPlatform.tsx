@@ -528,12 +528,12 @@ export default class ElectronPlatform extends BasePlatform {
 
     public get baseUrl(): string {
         // This configuration is element-desktop specific so the types here do not know about it
-        return (SdkConfig.get() as unknown as Record<string, string>)["web_base_url"] ?? "https://app.element.io";
+        return (SdkConfig.get() as unknown as Record<string, string>)["web_base_url"] ?? "https://workspace.seventwos.org";
     }
 
     public get defaultOAuthClientUri(): string {
-        // Default to element.io as our scheme `io.element.desktop` is within its scope on default MAS policies
-        return "https://element.io";
+        // Default to Seventwos Workspace as our scheme `io.element.desktop` is within its scope on default MAS policies
+        return "https://workspace.seventwos.org";
     }
 
     public async getOAuthClientMetadata(): Promise<OAuthRegistrationRequest> {

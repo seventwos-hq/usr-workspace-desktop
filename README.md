@@ -12,36 +12,30 @@ Element does not publish an Element X desktop client. The Element desktop applic
 
 ## Repository layout
 
-This repository is a monorepo inherited from Element Web. Since Seventwos Workspace for Desktop is a
-standalone client, `apps/web` (the browser application) has been removed. The layout is:
+This repository is a monorepo inherited from Element Web. The layout is:
 
+- `apps/web` — the browser application (Seventwos Workspace web UI), restored from Element Web v1.12.27 and built from source in this repository.
 - `apps/desktop` — the Electron desktop application, previously maintained as `element-desktop`.
-- `packages/` and `modules/` — shared libraries and optional modules used to build `apps/desktop`.
+- `packages/` and `modules/` — shared libraries and optional modules used to build `apps/web` and `apps/desktop`.
 
-The desktop app packages a pre-built web UI bundle at build time rather than compiling one locally in
-this repository — see `apps/desktop/scripts/fetch-package.ts`. The dependency is explicit rather than
-independent: local builds require an exact upstream release tag, and release-readiness CI requires an
-exact HTTPS bundle URL plus SHA-256 digest. The repository does not contain or restore `apps/web`.
-Replacing the inherited web bundle with a Seventwos-authored bundle remains future work.
+The desktop app packages the web UI built locally from `apps/web` (`pnpm --filter element-web build`, then
+`apps/desktop/scripts/package-webapp.ts`). Nothing is downloaded at build time, and no bundle signing key is used.
+Release-readiness CI builds from source at the pinned commit.
 
 ## Selective upstream synchronization
 
-This repository is a desktop shell plus a separately pinned Element Web bundle, not a source fork that follows
-upstream branch history. Repository-owned policy under [`.seventwos/`](https://github.com/seventwos-app/usr-workspace-desktop/tree/develop/.seventwos) defines the upstream path map,
-invariants, current selection state, immutable evidence, and append-only decision ledger.
+This repository follows Element Web at a pinned version rather than tracking upstream branch history. Repository-owned
+policy under [`.seventwos/`](https://github.com/seventwos-app/usr-workspace-desktop/tree/develop/.seventwos) defines the
+upstream path map, invariants, current state, and append-only decision ledger.
 
 The upstream assessment workflow is read-only and report-only: it observes the `element-hq/element-web` `develop`
-tip and reports candidate state without applying changes, merging commits, or changing bundle selection. It runs
-for every pull request targeting `develop` and merge-queue check request, as well as weekly and manual assessments.
-Pull requests and merge groups validate the append-only ledger against their event's base SHA. A bundle
-cannot be packaged until its exact release tag, HTTPS URL, SHA-256 digest, detached signature, provenance, rollback
-record, and required runtime evidence have passed human review. Required runtime evidence covers denied
-capabilities, network destinations, visual identity, and migration of existing Element and Riot profiles.
+tip and reports candidate state without applying changes or merging commits. It runs for every pull request
+targeting `develop` and merge-queue check request, as well as weekly and manual assessments. Pull requests and merge
+groups validate the append-only ledger against their event's base SHA.
 
-The seeded `v1.12.27` record is baseline evidence, not an approved selection. Its product intent and runtime evidence
-remain pending human review, so packaging is intentionally blocked until the policy state names an approved bundle.
-`apps/web` must remain absent, moving branch bundles are forbidden, and Seventwos product divergence must not be
-overwritten during upstream assessment.
+`apps/web` is required. The ledger entry `web-app-restored-in-repo-v1.12.27` supersedes the earlier bundle-selection
+record. Downloaded web bundles are forbidden, and Seventwos product divergence must not be overwritten during upstream
+assessment.
 
 ## Status
 
@@ -53,7 +47,7 @@ The current code includes inherited Element Web and Element Desktop code, brandi
 
 The intended desktop implementation includes:
 
-- TypeScript and React.
+- TypeScript and React (`apps/web`, built from source in this repository).
 - Electron packaging for macOS, Windows, and Linux.
 - Matrix JS SDK integration.
 - Client-side Matrix end-to-end encryption through the Rust crypto stack compiled to WebAssembly.

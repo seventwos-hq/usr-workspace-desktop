@@ -6,7 +6,7 @@ The project retains Element's desktop approach: a TypeScript and React applicati
 
 ## Relationship to the iOS and Android workspaces
 
-[Seventwos Workspace for iOS](https://github.com/seventwos-app/usr-workspace-ios) and [Seventwos Workspace for Android](https://github.com/seventwos-app/usr-workspace-android) are forks of Element X, which are native clients built directly on the [Matrix Rust SDK](https://github.com/matrix-org/matrix-rust-sdk).
+[Seventwos Workspace for iOS](https://github.com/seventwos-hq/usr-workspace-ios) and [Seventwos Workspace for Android](https://github.com/seventwos-hq/usr-workspace-android) are forks of Element X, which are native clients built directly on the [Matrix Rust SDK](https://github.com/matrix-org/matrix-rust-sdk).
 
 Element does not publish an Element X desktop client. The Element desktop application is maintained inside the Element Web monorepo and is built on the Matrix JS SDK, so this repository forks Element Web rather than Element X. The three workspaces therefore share product intent and a common Matrix protocol foundation, but not a single application codebase.
 
@@ -27,7 +27,7 @@ Replacing the inherited web bundle with a Seventwos-authored bundle remains futu
 ## Selective upstream synchronization
 
 This repository is a desktop shell plus a separately pinned Element Web bundle, not a source fork that follows
-upstream branch history. Repository-owned policy under [`.seventwos/`](https://github.com/seventwos-app/usr-workspace-desktop/tree/develop/.seventwos) defines the upstream path map,
+upstream branch history. Repository-owned policy under [`.seventwos/`](https://github.com/seventwos-hq/usr-workspace-desktop/tree/main/.seventwos) defines the upstream path map,
 invariants, current selection state, immutable evidence, and append-only decision ledger.
 
 The upstream assessment workflow is read-only and report-only: it observes the `element-hq/element-web` `develop`
@@ -80,7 +80,7 @@ Copyright (c) 2017 - 2025 New Vector Ltd.
 
 These upstream copyright notices are retained in recognition of the work on which this fork is based.
 
-We license the repository-owned code under the GNU Affero General Public License v3 only. See [LICENSE-AGPL-3.0](https://github.com/seventwos-app/usr-workspace-desktop/blob/develop/LICENSE-AGPL-3.0) for the applicable terms. Third-party dependencies remain under their respective licences.
+We license the repository-owned code under the GNU Affero General Public License v3 only. See [LICENSE-AGPL-3.0](https://github.com/seventwos-hq/usr-workspace-desktop/blob/main/LICENSE-AGPL-3.0) for the applicable terms. Third-party dependencies remain under their respective licences.
 
 Our modifications and newly authored repository code use AGPL-3.0-only. When we distribute a modified version or make one available for users to interact with over a network, we provide the corresponding source as required by the AGPL.
 

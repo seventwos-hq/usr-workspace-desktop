@@ -1,0 +1,32 @@
+name: disclosure
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  disclosure:
+    runs-on: dev-vm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git config --global --add safe.directory "$PWD"
+      - name: Check pull request text
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
+          DISCLOSURE_DENYLIST: ${{ secrets.DISCLOSURE_DENYLIST }}
+        run: |
+          git fetch --no-tags origin "+refs/heads/${PR_BASE}:refs/remotes/origin/${PR_BASE}"
+          printf '%s' "$PR_BODY" > "$RUNNER_TEMP/pr_body.txt"
+          # run the checker from the base branch, never from the PR checkout
+          git show "origin/${PR_BASE}:.forgejo/scripts/disclosure_check.py" > "$RUNNER_TEMP/disclosure_check.py" \
+            || { echo "checker not found on base branch" >&2; exit 2; }
+          python3 "$RUNNER_TEMP/disclosure_check.py" \
+            --title "$PR_TITLE" \
+            --body-file "$RUNNER_TEMP/pr_body.txt" \
+            --branch "$PR_BRANCH" \
+            --range "origin/${PR_BASE}..HEAD"

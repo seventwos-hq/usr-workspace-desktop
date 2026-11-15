@@ -46,6 +46,10 @@ export default defineConfig({
     test: {
         projects: [
             "{apps,modules,packages}/*/vitest.config.ts",
+            // Browser-mode tests for the web app. A separate top-level project rather than a
+            // nested one inside apps/web/vitest.config.ts, for the same reason as the
+            // shared-components exclusion below.
+            "apps/web/vitest.browser.config.ts",
             // We run shared-components separately for now as vitest lacks support for nested projects
             // https://github.com/vitest-dev/vitest/issues/8544
             "!packages/shared-components",

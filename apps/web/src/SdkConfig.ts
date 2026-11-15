@@ -17,15 +17,15 @@ import ElementDesktopLogoSvg from "../res/img/element-desktop-logo.svg";
 
 // see element-web config.md for docs, or the IConfigOptions interface for dev docs
 export const DEFAULTS = {
-    brand: "Element",
+    brand: "Seventwos Workspace",
     branding: {
-        logo_link_url: "https://element.io",
+        logo_link_url: "https://workspace.seventwos.org",
         auth_header_logo_url: "themes/element/img/logos/element-logo.svg",
         welcome_background_url: "themes/element/img/backgrounds/lake.jpg",
     },
-    help_url: "https://element.io/help",
-    help_encryption_url: "https://element.io/help#encryption",
-    help_key_storage_url: "https://element.io/help#encryption5",
+    help_url: "https://workspace.seventwos.org/help",
+    help_encryption_url: "https://workspace.seventwos.org/help#encryption",
+    help_key_storage_url: "https://workspace.seventwos.org/help#encryption5",
     integrations_ui_url: "https://scalar.vector.im/",
     integrations_rest_url: "https://scalar.vector.im/api",
     show_labs_settings: false,
@@ -33,10 +33,10 @@ export const DEFAULTS = {
     enable_client_well_known_lookups: true,
 
     jitsi: {
-        preferred_domain: "meet.element.io",
+        preferred_domain: "meet.seventwos.org",
     },
     element_call: {
-        brand: "Element Call",
+        brand: "Seventwos Call",
     },
 
     // @ts-ignore - we deliberately use the camelCase version here so we trigger
@@ -46,7 +46,7 @@ export const DEFAULTS = {
     desktopBuilds: {
         available: true,
         logo: ElementDesktopLogoSvg,
-        url: "https://element.io/get-started",
+        url: "https://workspace.seventwos.org/get-started",
     },
 
     feedback: {
@@ -58,11 +58,11 @@ export const DEFAULTS = {
     desktop_builds: {
         available: true,
         logo: "vector-icons/1024.png",
-        url: "https://element.io/download",
-        url_macos: "https://packages.element.io/desktop/install/macos/Element.dmg",
-        url_win64: "https://packages.element.io/desktop/install/win32/x64/Element%20Setup.exe",
-        url_win64arm: "https://packages.element.io/desktop/install/win32/arm64/Element%20Setup.exe",
-        url_linux: "https://element.io/download#linux",
+        url: "https://workspace.seventwos.org/download",
+        url_macos: "https://workspace.seventwos.org/download",
+        url_win64: "https://workspace.seventwos.org/download",
+        url_win64arm: "https://workspace.seventwos.org/download",
+        url_linux: "https://workspace.seventwos.org/download#linux",
     },
     mobile_builds: {
         ios: "https://apps.apple.com/app/vector/id1083446067",

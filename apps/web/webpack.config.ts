@@ -34,7 +34,7 @@ import type { sentryWebpackPlugin as sentryWebpackPluginType } from "@sentry/web
 // Environment variables
 // RIOT_OG_IMAGE_URL: specifies the URL to the image which should be used for the opengraph logo.
 // CSP_EXTRA_SOURCE: specifies a URL which should be appended to each CSP directive which uses 'self',
-//   this can be helpful if your deployment has redirects for old bundles, such as develop.element.io.
+//   this can be helpful if your deployment has redirects for old bundles, such as develop.seventwos.org.
 
 let sentryWebpackPlugin: typeof sentryWebpackPluginType | undefined;
 // This plugin throws an error on import on some platforms like ppc64le & s390x even if the plugin isn't called,
@@ -51,7 +51,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config();
 let ogImageUrl = process.env.RIOT_OG_IMAGE_URL;
-if (!ogImageUrl) ogImageUrl = "https://app.element.io/themes/element/img/logos/opengraph.png";
+if (!ogImageUrl) ogImageUrl = "https://workspace.seventwos.org/themes/element/img/logos/opengraph.png";
 
 const cssThemes = {
     // CSS themes
@@ -122,11 +122,11 @@ export default (env: string, argv: Record<string, any>): webpack.Configuration =
     // Establish settings based on the environment and args.
     //
     // argv.mode is always set to "production" by pnpm build
-    //      (called to build prod, nightly and develop.element.io)
+    //      (called to build prod, nightly and develop.seventwos.org)
     // arg.mode is set to "development" by pnpm start
     //      (called by developers, runs the continuous reload script)
     // process.env.CI_PACKAGE is set when pnpm build is called from scripts/ci_package.sh
-    //      (called to build nightly and develop.element.io)
+    //      (called to build nightly and develop.seventwos.org)
     const nodeEnv = argv.mode;
     const devMode = nodeEnv !== "production";
     const enableMinification = !devMode && !process.env.CI_PACKAGE;

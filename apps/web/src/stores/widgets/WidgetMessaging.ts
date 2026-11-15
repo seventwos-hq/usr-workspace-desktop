@@ -100,8 +100,8 @@ export class ElementWidget extends Widget {
         }
         let domain = super.rawData["domain"];
         if (domain === undefined) {
-            // v1 widgets default to meet.element.io regardless of user settings
-            domain = "meet.element.io";
+            // v1 widgets default to meet.seventwos.org regardless of user settings
+            domain = "meet.seventwos.org";
         }
 
         let theme = new ThemeWatcher().getEffectiveTheme();

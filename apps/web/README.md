@@ -70,7 +70,7 @@ guide](https://pnpm.io/installation#using-corepack) if you do not have it alread
     - If you're using the `develop` branch, then it is recommended to set up a
       proper development environment (see [Setting up a dev
       environment](../../developer_guide.md#setting-up-a-dev-environment) below). Alternatively, you
-      can use <https://develop.element.io> - the continuous integration release of
+      can use <https://develop.seventwos.org> - the continuous integration release of
       the develop branch.
 1. Configure the app by copying `config.sample.json` to `config.json` and
    modifying it. See the [configuration docs](../../docs/config.md) for details.

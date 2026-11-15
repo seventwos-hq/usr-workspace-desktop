@@ -116,7 +116,7 @@ async function initPage(): Promise<void> {
     if (hsUrl && !hsUrl.endsWith("/")) hsUrl += "/";
     if (isUrl && !isUrl.endsWith("/")) isUrl += "/";
 
-    let deepLinkUrl = `https://mobile.element.io${metadata.deepLinkPath}`;
+    let deepLinkUrl = `https://workspace.seventwos.org/mobile${metadata.deepLinkPath}`;
 
     if (metadata.usesLegacyDeepLink) {
         deepLinkUrl += `?hs_url=${encodeURIComponent(hsUrl)}`;
@@ -127,7 +127,7 @@ async function initPage(): Promise<void> {
         deepLinkUrl += `?account_provider=${serverName}`;
     }
 
-    // Not part of updateMobilePage as the link is only shown on mobile_guide and not on mobile.element.io
+    // Not part of updateMobilePage as the link is only shown on mobile_guide and not on the Seventwos mobile site
     document.getElementById("back_to_element_button")!.onclick = onBackToElementClick;
 
     updateMobilePage(metadata, deepLinkUrl, serverName ?? hsUrl);

@@ -3,3 +3,46 @@ title = "usr-workspace-desktop gitleaks config"
 [extend]
 useDefault = true
 
+# Upstream Element web v1.12.28 import (apps/web): public / non-secret values
+# that trip generic-api-key. Each exception is scoped to ONE rule, ONE file and
+# the exact matched value or key shape (condition = AND), so any other string
+# added to these files is still scanned.
+[[rules]]
+id = "generic-api-key"
+
+# Public Curve25519 device/sender keys in the crypto-store test fixture.
+[[rules.allowlists]]
+description = "Element crypto-store fixture: public Curve25519 keys"
+condition = "AND"
+paths = ['''^apps/web/playwright/e2e/crypto/test_indexeddb_cryptostore_dump/dump\.json$''']
+regexTarget = "match"
+regexes = ['''^(senderCurve25519Key|sender_key|deviceKey)"\s*:\s*"[A-Za-z0-9+/]{43}"$''']
+
+# Public MapTiler key and PostHog project key in Element shipped configs.
+[[rules.allowlists]]
+description = "Element public MapTiler / PostHog keys in config files"
+condition = "AND"
+paths = [
+  '''^apps/web/element\.io/app/config\.json$''',
+  '''^apps/web/element\.io/develop/config\.json$''',
+  '''^apps/web/config\.sample\.json$''',
+]
+regexTarget = "secret"
+regexes = [
+  '''^fU3vlMsMn4Jb6dnEIFsx$''',
+  '''^phc_Jzsm6DTm6V2705zeU5dcNvQDlonOR68XvX2sh1sEOHO$''',
+]
+
+[[rules.allowlists]]
+description = "Element widget driver test fixture values"
+condition = "AND"
+paths = ['''^apps/web/src/stores/widgets/ElementWidgetDriver\.test\.ts$''']
+regexTarget = "secret"
+regexes = ['''^7f433807-26aa-441b-810f-43b3fd6d0955$''', '''^JlKfBy1QwLrO20385QyAtEyIv0=$''']
+
+[[rules.allowlists]]
+description = "Element Searching.ts: property name, not a key"
+condition = "AND"
+paths = ['''^apps/web/src/Searching\.ts$''']
+regexTarget = "secret"
+regexes = ['''^ev\.forwardingCurve25519KeyChain$''']

@@ -1,7 +1,7 @@
 ## Packaging builds
 
 Seventwos Workspace for Desktop artifacts are built by the
-[`build_desktop_and_deploy.yaml`](https://github.com/seventwos-app/usr-workspace-desktop/blob/develop/.github/workflows/build_desktop_and_deploy.yaml)
+[`build_desktop_and_deploy.yaml`](https://github.com/seventwos-hq/usr-workspace-desktop/blob/main/.github/workflows/build_desktop_and_deploy.yaml)
 GitHub Actions workflow.
 
 This workflow is currently triggered manually (`workflow_dispatch`) rather than on a schedule. It takes
@@ -12,7 +12,7 @@ and builds unsigned macOS, Windows, and Linux artifacts as selected via the work
 ### Triggering a manual build
 
 Go to the
-[`build_desktop_and_deploy.yaml`](https://github.com/seventwos-app/usr-workspace-desktop/actions/workflows/build_desktop_and_deploy.yaml)
+[`build_desktop_and_deploy.yaml`](https://github.com/seventwos-hq/usr-workspace-desktop/actions/workflows/build_desktop_and_deploy.yaml)
 workflow page in this repository:
 
 1. Click `Run workflow`

@@ -6,7 +6,7 @@
     "description": "Shared utilities used internally to build Seventwos Workspace for Desktop (inherited from Element Web).",
     "repository": {
         "type": "git",
-        "url": "https://github.com/seventwos-app/usr-workspace-desktop",
+        "url": "https://github.com/seventwos-hq/usr-workspace-desktop",
         "directory": "packages/shared-utils"
     },
     "author": {

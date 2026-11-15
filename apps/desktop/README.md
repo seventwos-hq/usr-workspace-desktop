@@ -1,4 +1,4 @@
-![Build](https://github.com/seventwos-app/usr-workspace-desktop/actions/workflows/build_desktop_and_deploy.yaml/badge.svg)
+![Build](https://github.com/seventwos-hq/usr-workspace-desktop/actions/workflows/build_desktop_and_deploy.yaml/badge.svg)
 
 # Seventwos Workspace for Desktop
 
@@ -151,7 +151,7 @@ See this repository's translation workflow and developer documentation when they
 
 If you run into any bugs or have feedback you'd like to share, please let us know on GitHub.
 
-To help avoid duplicate issues, please [view existing issues](https://github.com/seventwos-app/usr-workspace-desktop/issues?q=is%3Aopen+is%3Aissue+sort%3Areactions-%2B1-desc) first or [create a new issue](https://github.com/seventwos-app/usr-workspace-desktop/issues/new/choose) if you cannot find it.
+To help avoid duplicate issues, please [view existing issues](https://github.com/seventwos-hq/usr-workspace-desktop/issues?q=is%3Aopen+is%3Aissue+sort%3Areactions-%2B1-desc) first or [create a new issue](https://github.com/seventwos-hq/usr-workspace-desktop/issues/new/choose) if you cannot find it.
 
 ## Copyright & License
 
@@ -161,6 +161,6 @@ Copyright (c) 2017 Vector Creations Ltd
 
 Copyright (c) 2017-2025 New Vector Ltd
 
-This application is maintained as Seventwos Workspace for Desktop. We license the repository-owned code under the GNU Affero General Public License v3 only. See [LICENSE-AGPL-3.0](https://github.com/seventwos-app/usr-workspace-desktop/blob/develop/LICENSE-AGPL-3.0) for the applicable terms.
+This application is maintained as Seventwos Workspace for Desktop. We license the repository-owned code under the GNU Affero General Public License v3 only. See [LICENSE-AGPL-3.0](https://github.com/seventwos-hq/usr-workspace-desktop/blob/main/LICENSE-AGPL-3.0) for the applicable terms.
 
 Unless required by applicable law or agreed to in writing, software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.

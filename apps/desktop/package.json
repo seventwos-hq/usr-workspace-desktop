@@ -11,7 +11,7 @@
     "homepage": "https://seventwos.org",
     "repository": {
         "type": "git",
-        "url": "https://github.com/seventwos-app/usr-workspace-desktop"
+        "url": "https://github.com/seventwos-hq/usr-workspace-desktop"
     },
     "license": "AGPL-3.0-only",
     "private": true,

@@ -234,6 +234,7 @@ import os,subprocess,sys
 rev,dest=sys.argv[1],sys.argv[2]
 ents=[e for e in sys.stdin.buffer.read().split(b"\0") if e]
 p=subprocess.Popen(["git","cat-file","--batch"],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+MAX_BLOB=64<<20; MAX_TOTAL=1<<30; total=0   # per-blob / total materialization limits (fail closed)
 for e in ents:
     meta,path=e.split(b"\t",1)
     mode,typ,sha=meta.split(b" ")
@@ -243,10 +244,16 @@ for e in ents:
     p.stdin.write(sha+b"\n"); p.stdin.flush()
     h=p.stdout.readline().split()
     if len(h)!=3 or h[1]!=b"blob": sys.exit("cat-file failed")
-    n=int(h[2]); data=p.stdout.read(n); p.stdout.read(1)
-    if len(data)!=n: sys.exit("short read")
+    n=int(h[2]); total+=n
+    if n>MAX_BLOB or total>MAX_TOTAL: sys.exit("blob size limit exceeded (fail closed)")   # limits checked from the header, before reading
     t=os.path.join(dest.encode(),path); os.makedirs(os.path.dirname(t),exist_ok=True)
-    with open(t,"wb") as f: f.write(data)
+    with open(t,"wb") as f:
+        left=n
+        while left:   # bounded-memory copy: never buffer a whole PR-controlled blob
+            c=p.stdout.read(min(left,1<<16))
+            if not c: sys.exit("short read")
+            f.write(c); left-=len(c)
+    if p.stdout.read(1)!=b"\n": sys.exit("cat-file framing error")
 p.stdin.close(); sys.exit(p.wait())
 ' "$rev" "$d" || { echo "cannot materialize $rev (fail closed)" >&2; return 2; }
   find "$d" -type l -delete || return 2

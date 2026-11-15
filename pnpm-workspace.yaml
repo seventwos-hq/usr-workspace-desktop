@@ -192,7 +192,6 @@ overrides:
   # vitepress is the only consumer of vite <8; pin it to a patched vite 6 (it does not support vite 8).
   vitepress>vite: ^6.4.3
   # https://github.com/advisories/GHSA-c2j3-45gr-mqc4
-  dompurify@3 <=3.4.11: ^3.4.12
   # https://github.com/advisories/GHSA-v422-hmwv-36x6
   body-parser@2 <2.3.0: ^2.3.0
   # https://github.com/advisories/GHSA-g2r8-wvmj-jf5w
@@ -205,6 +204,18 @@ overrides:
   svgo@4 <4.0.2: ^4.0.2
   # https://github.com/advisories/GHSA-7p8r-x3mc-p8w7
   fast-uri@3 <3.1.5: ^3.1.5
+  # https://github.com/advisories/GHSA-jqcg-44mw-7w3h
+  proxy-addr@2 <2.0.8: ^2.0.8
+  # https://github.com/advisories/GHSA-pqg4-j6r4-53mv
+  shell-quote@>=1.8.4 <1.11.0: ^1.11.0
+  # https://github.com/advisories/GHSA-8r5x-fm3f-whwj
+  # https://github.com/advisories/GHSA-p8wg-vrv2-v86f
+  handlebars@4 <4.7.10: ^4.7.10
+  # https://github.com/advisories/GHSA-f2ph-cmg5-wxc8
+  storybook@10 <10.6.2: ^10.6.2
+  "@storybook/addon-vitest@10 <10.6.2": ^10.6.2
+  # https://github.com/advisories/GHSA-cg2g-xh64-v4q7
+  dompurify@3 <3.4.17: ^3.4.17
 
   # Convince api-extractor to use a newer Typescript version
   "unplugin-dts>typescript": "catalog:ts6"

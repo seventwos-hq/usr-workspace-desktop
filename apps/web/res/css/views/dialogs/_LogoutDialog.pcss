@@ -1,0 +1,30 @@
+/*
+Copyright 2024 New Vector Ltd.
+Copyright 2023 Manan Sadana <manancodes.dev@gmail.com>
+
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
+Please see LICENSE files in the repository root for full details.
+*/
+
+.mx_LogoutDialog {
+    width: 26rem;
+
+    .mx_EncryptionCard {
+        /* The dialog-based recovery key flow preserves the card's gap, but emphasised content sets its own. */
+        &:has(> .mx_EncryptionCard_emphasisedContent) {
+            gap: 0;
+        }
+        h2 {
+            text-align: center;
+            color: var(--cpd-color-text-primary);
+        }
+        .mx_EncryptionCard_emphasisedContent {
+            text-align: center;
+            margin-top: var(--cpd-space-2x);
+            margin-bottom: var(--cpd-space-12x);
+            p {
+                margin: 0;
+            }
+        }
+    }
+}

@@ -17,5 +17,6 @@
     "required": true,
     "status": "pending",
     "reason": "Product intent for the inherited Element Web bundle has not been classified against Seventwos requirements."
-  }
+  },
+  "pinnedTag": "v1.12.35"
 }

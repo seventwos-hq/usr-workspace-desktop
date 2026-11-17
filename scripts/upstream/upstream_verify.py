@@ -198,8 +198,8 @@ def check_patches(head: str) -> str:
         if not name.endswith(".patch") or "/" in name or not reason.strip() or name in entries:
             raise VerifyError(f"{PATCH_SERIES} line {lineno}: need a unique '<name>.patch <reason>'")
         entries.append(name)
-    listed = git("ls-tree", "-z", "--name-only", f"{head}:{PATCH_DIR}")
-    on_disk = {n for n in listed.split("\0") if n.endswith(".patch")}
+    listed = git("ls-tree", "-z", "--name-only", "--full-tree", head, f"{PATCH_DIR}/")
+    on_disk = {n.rsplit("/", 1)[-1] for n in listed.split("\0") if n.endswith(".patch")}
     if on_disk != set(entries):
         raise VerifyError("patch files and series differ: missing " + ", ".join(sorted(set(entries) - on_disk))
                           + "; unlisted " + ", ".join(sorted(on_disk - set(entries))))
@@ -207,7 +207,9 @@ def check_patches(head: str) -> str:
         return "no patches listed"
     with tempfile.TemporaryDirectory() as tmp:
         subprocess.run(["git", "init", "-q", tmp], check=True, capture_output=True)
-        archive = git("archive", "--format=tar", head, "--", *[p.rstrip("/") for p in IMPORT_PREFIXES], binary=True)
+        top = git("rev-parse", "--show-toplevel").strip()
+        archive = subprocess.run(["git", "archive", "--format=tar", head, "--", *[p.rstrip("/") for p in IMPORT_PREFIXES]],
+                                 cwd=top, check=True, capture_output=True).stdout
         with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
             tar.extractall(tmp, filter="data")
         for name in entries:

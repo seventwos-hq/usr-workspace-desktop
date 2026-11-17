@@ -25,7 +25,7 @@ MANDATORY_EVIDENCE = (
 MANDATORY_MAPPINGS = (
     ("apps/web/**", "apps/web/**", "upstream-import-only"),
     ("apps/desktop/**", "apps/desktop/**", "selective-review"),
-    ("packages/**", "packages/**", "selective-review"),
+    ("packages/**", "packages/**", "upstream-import-only"),
     ("modules/**", "modules/**", "protected-divergence"),
     (".github/workflows/**", ".github/workflows/**", "protected-divergence"),
     ("none", "apps/desktop/seventwos.org/**", "protected-divergence"),

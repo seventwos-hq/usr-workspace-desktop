@@ -8,5 +8,78 @@
     "features": {
         "feature_video_rooms": false,
         "feature_element_call_video_rooms": false
+    },
+    "default_theme": "custom-Seventwos Dark",
+    "setting_defaults": {
+        "custom_themes": [
+            {
+                "name": "Seventwos Dark",
+                "is_dark": true,
+                "fonts": {
+                    "general": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif"
+                },
+                "colors": {
+                    "accent-color": "#ce2d4f",
+                    "primary-color": "#ce2d4f",
+                    "warning-color": "#c5221f",
+                    "sidebar-color": "#000000",
+                    "roomlist-background-color": "#0b0b0c",
+                    "roomlist-highlights-color": "#141416",
+                    "roomlist-separator-color": "#ffffff17",
+                    "timeline-background-color": "#000000",
+                    "timeline-text-color": "#f5f5f5",
+                    "timeline-text-secondary-color": "#b8b8b8",
+                    "timeline-highlights-color": "#141416"
+                },
+                "compound": {
+                    "--cpd-color-bg-action-primary-rest": "#ce2d4f",
+                    "--cpd-color-bg-action-primary-hovered": "#b02543",
+                    "--cpd-color-text-on-solid-primary": "#ffffff",
+                    "--cpd-color-text-critical-primary": "#c5221f",
+                    "--cpd-color-bg-critical-primary": "#c5221f",
+                    "--cpd-color-bg-canvas-default": "#000000",
+                    "--cpd-color-bg-subtle-primary": "#141416",
+                    "--cpd-color-bg-subtle-secondary": "#1c1c1f",
+                    "--cpd-color-text-primary": "#f5f5f5",
+                    "--cpd-color-text-secondary": "#b8b8b8",
+                    "--cpd-color-border-disabled": "#ffffff17",
+                    "--cpd-color-border-interactive-primary": "#ffffff2e"
+                }
+            },
+            {
+                "name": "Seventwos Light",
+                "is_dark": false,
+                "fonts": {
+                    "general": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif"
+                },
+                "colors": {
+                    "accent-color": "#ce2d4f",
+                    "primary-color": "#ce2d4f",
+                    "warning-color": "#c5221f",
+                    "sidebar-color": "#f4f4f5",
+                    "roomlist-background-color": "#fafafa",
+                    "roomlist-highlights-color": "#ededf0",
+                    "roomlist-separator-color": "#00000017",
+                    "timeline-background-color": "#ffffff",
+                    "timeline-text-color": "#171717",
+                    "timeline-text-secondary-color": "#525252",
+                    "timeline-highlights-color": "#f4f4f5"
+                },
+                "compound": {
+                    "--cpd-color-bg-action-primary-rest": "#ce2d4f",
+                    "--cpd-color-bg-action-primary-hovered": "#b02543",
+                    "--cpd-color-text-on-solid-primary": "#ffffff",
+                    "--cpd-color-text-critical-primary": "#c5221f",
+                    "--cpd-color-bg-critical-primary": "#c5221f",
+                    "--cpd-color-bg-canvas-default": "#ffffff",
+                    "--cpd-color-bg-subtle-primary": "#f4f4f5",
+                    "--cpd-color-bg-subtle-secondary": "#ededf0",
+                    "--cpd-color-text-primary": "#171717",
+                    "--cpd-color-text-secondary": "#525252",
+                    "--cpd-color-border-disabled": "#00000017",
+                    "--cpd-color-border-interactive-primary": "#00000033"
+                }
+            }
+        ]
     }
 }

@@ -29,7 +29,8 @@ PIN_PATH = ".seventwos/upstream-pin.json"
 STATE_PATH = ".seventwos/upstream-state.json"
 LEDGER_PATH = ".seventwos/upstream-ledger.jsonl"
 WEB_PREFIX = "apps/web/"
-ALLOWED_FILES = {STATE_PATH, LEDGER_PATH}
+# The workspace lockfile and catalog must change with the imported app.
+ALLOWED_FILES = {STATE_PATH, LEDGER_PATH, "pnpm-lock.yaml", "pnpm-workspace.yaml"}
 MAX_TARBALL_BYTES = 200 * 1024 * 1024
 
 

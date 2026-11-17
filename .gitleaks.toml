@@ -46,3 +46,12 @@ condition = "AND"
 paths = ['''^apps/web/src/Searching\.ts$''']
 regexTarget = "secret"
 regexes = ['''^ev\.forwardingCurve25519KeyChain$''']
+
+# Self-signed TLS key used only by the upstream end-to-end test containers.
+# Exempt from the private-key rule for this one file path only.
+[[rules]]
+id = "private-key"
+
+[[rules.allowlists]]
+description = "Element e2e test container: self-signed test TLS key"
+paths = ['''^apps/web/playwright/testcontainers/res/matrix-rtc/tls\.key$''']

@@ -8,8 +8,8 @@ downloaded by tag and must match the pinned SHA-256.
 Rules for a pull request (base..head):
   * No change to apps/web or packages (or under them) and no pinnedTag change: not an import, pass.
   * Otherwise every changed path must be in the import allowlist, every file
-    under apps/web/ and packages/ must be byte-identical (content, executable bit, symlink
-    target) to the same path in the pinned tarball, and
+    under apps/web/, packages/, and patches/, plus package.json, must be byte-identical
+    (content, executable bit, symlink target) to the same path in the pinned tarball, and
     .seventwos/upstream-state.json must carry "pinnedTag" equal to the pin.
 Exit 0 = pass, 1 = verification failed, 2 = setup error (fail closed).
 """
@@ -32,7 +32,9 @@ LEDGER_PATH = ".seventwos/upstream-ledger.jsonl"
 IMPORT_PREFIXES = ("apps/web/", "packages/")
 # The workspace lockfile and catalog must change with the imported app.
 # The root manifest and the dependency patches also follow the imported release.
-ALLOWED_FILES = {STATE_PATH, LEDGER_PATH, "pnpm-lock.yaml", "pnpm-workspace.yaml", "package.json"}
+IMPORT_FILES = ("package.json",)
+# The root lint config follows the imported release but keeps our license header.
+ALLOWED_FILES = {STATE_PATH, LEDGER_PATH, "pnpm-lock.yaml", "pnpm-workspace.yaml", "oxlint.config.ts", *IMPORT_FILES}
 ALLOWED_PREFIXES = ("patches/",)
 MAX_TARBALL_BYTES = 200 * 1024 * 1024
 
@@ -111,7 +113,7 @@ def tarball_tree(data: bytes, sha256: str) -> dict[str, tuple[str, bytes]]:
             if len(parts) < 2:
                 continue
             rel = "/".join(parts[1:])
-            if not any(rel.startswith(pre) for pre in IMPORT_PREFIXES):
+            if not (rel.startswith(IMPORT_PREFIXES + ALLOWED_PREFIXES) or rel in IMPORT_FILES):
                 continue
             if member.isdir():
                 continue
@@ -133,7 +135,8 @@ def tarball_tree(data: bytes, sha256: str) -> dict[str, tuple[str, bytes]]:
 
 
 def git_tree(head: str) -> dict[str, tuple[str, bytes]]:
-    out = git("ls-tree", "-r", "-z", "--full-tree", head, "--", *[p.rstrip("/") for p in IMPORT_PREFIXES])
+    out = git("ls-tree", "-r", "-z", "--full-tree", head, "--",
+              *[p.rstrip("/") for p in IMPORT_PREFIXES + ALLOWED_PREFIXES], *IMPORT_FILES)
     tree: dict[str, tuple[str, bytes]] = {}
     for entry in filter(None, out.split("\0")):
         meta, path = entry.split("\t", 1)
@@ -172,7 +175,7 @@ def verify(base: str, head: str, fetch=download) -> str:
     if problems:
         shown = "\n  ".join(problems[:50])
         raise VerifyError(f"imported paths differ from {pin['repository']} {pin['tag']} ({len(problems)} problems):\n  {shown}")
-    return f"pass: apps/web and packages are byte-identical to {pin['repository']} {pin['tag']}"
+    return f"pass: apps/web, packages, patches, and package.json are byte-identical to {pin['repository']} {pin['tag']}"
 
 
 def main(argv=None) -> int:

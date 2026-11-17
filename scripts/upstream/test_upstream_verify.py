@@ -17,6 +17,8 @@ SPEC.loader.exec_module(UV)
 
 WEB = {"apps/web/package.json": b'{"version": "1.0.0"}\n', "apps/web/src/a.ts": b"export const a = 1;\n",
        "packages/shared-utils/src/b.ts": b"export const b = 1;\n"}
+SUPPORT = {"package.json": b'{"scripts": {"postinstall": "node scripts/pnpm-link.ts"}}\n',
+           "patches/dependency.patch": b"trusted patch\n"}
 
 
 def make_tarball(files: dict) -> bytes:
@@ -35,7 +37,7 @@ class UpstreamVerifyTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.cwd = os.getcwd()
         os.chdir(self.tmp.name)
-        self.tarball = make_tarball({**WEB, "apps/desktop/x.txt": b"ignored\n"})
+        self.tarball = make_tarball({**WEB, **SUPPORT, "apps/desktop/x.txt": b"ignored\n"})
         self.fetch = lambda url: self.tarball
         self.git("init", "-q", "-b", "main")
         self.git("config", "user.email", "test@example.invalid")
@@ -69,7 +71,7 @@ class UpstreamVerifyTests(unittest.TestCase):
         self.git("commit", "-q", "-m", msg)
 
     def import_web(self, files=WEB, tag="v1.0.0"):
-        for rel, data in files.items():
+        for rel, data in {**SUPPORT, **files}.items():
             self.write(rel, data)
         self.write(".seventwos/upstream-state.json", json.dumps({"pinnedTag": tag}).encode())
         self.write(".seventwos/upstream-ledger.jsonl", b'{"tag": "%s"}\n' % tag.encode())
@@ -86,6 +88,51 @@ class UpstreamVerifyTests(unittest.TestCase):
     def test_exact_import_passes(self):
         self.import_web()
         self.assertIn("byte-identical", self.verify())
+
+    def test_modified_root_postinstall_fails(self):
+        self.import_web({**WEB, "package.json": b'{"scripts": {"postinstall": "malicious"}}\n'})
+        with self.assertRaisesRegex(UV.VerifyError, "content differs: package.json"):
+            self.verify()
+
+    def test_modified_patch_fails(self):
+        self.import_web({**WEB, "patches/dependency.patch": b"malicious patch\n"})
+        with self.assertRaisesRegex(UV.VerifyError, "content differs: patches/dependency.patch"):
+            self.verify()
+
+    def test_missing_support_files_fail(self):
+        for path in SUPPORT:
+            with self.subTest(path=path):
+                self.import_web()
+                Path(path).unlink()
+                self.commit("delete support file")
+                with self.assertRaisesRegex(UV.VerifyError, f"missing: {path}"):
+                    self.verify()
+
+    def test_extra_patch_fails(self):
+        self.import_web({**WEB, "patches/extra.patch": b"unverified patch\n"})
+        with self.assertRaisesRegex(UV.VerifyError, "extra: patches/extra.patch"):
+            self.verify()
+
+    def test_support_mode_changes_fail(self):
+        for path in SUPPORT:
+            with self.subTest(path=path):
+                self.import_web()
+                os.chmod(path, 0o755)
+                self.commit("chmod support file")
+                with self.assertRaisesRegex(UV.VerifyError, f"mode differs: {path}"):
+                    self.verify()
+                os.chmod(path, 0o644)
+
+    def test_support_symlinks_fail(self):
+        for path in SUPPORT:
+            with self.subTest(path=path):
+                self.import_web()
+                Path(path).unlink()
+                os.symlink("README.md", path)
+                self.commit("support symlink")
+                with self.assertRaisesRegex(UV.VerifyError, f"mode differs: {path}"):
+                    self.verify()
+                Path(path).unlink()
 
     def test_web_root_regular_file_fails(self):
         self.write("apps/web", b"unverified\n")
@@ -144,6 +191,11 @@ class UpstreamVerifyTests(unittest.TestCase):
         self.import_web()
         with self.assertRaisesRegex(UV.VerifyError, "outside the allowlist: apps/desktop/main.ts"):
             self.verify()
+
+    def test_lint_config_change_with_import_passes(self):
+        self.write("oxlint.config.ts", b"export default {};\n")
+        self.import_web()
+        self.verify()
 
     def test_pin_change_in_pr_is_outside_allowlist(self):
         self.write(".seventwos/upstream-pin.json", b"{}")

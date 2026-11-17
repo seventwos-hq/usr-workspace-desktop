@@ -1,15 +1,13 @@
 {
-    "name": "seventwos-workspace-desktop-monorepo",
+    "name": "element-web-monorepo",
     "version": "0.0.0",
-    "description": "Seventwos Workspace for Desktop monorepo: shared packages and modules used to build the desktop application.",
-    "author": {
-        "name": "Seventwos"
-    },
+    "description": "Element: the future of secure communication",
+    "author": "New Vector Ltd.",
     "repository": {
         "type": "git",
-        "url": "https://github.com/seventwos-hq/usr-workspace-desktop"
+        "url": "https://github.com/element-hq/element-web"
     },
-    "license": "AGPL-3.0-only",
+    "license": "SEE LICENSE IN README.md",
     "type": "module",
     "scripts": {
         "i18n": "pnpm -r i18n",
@@ -29,7 +27,7 @@
         "docs:build": "vitepress build docs",
         "docs:preview": "vitepress preview docs",
         "test:unit": "nx run-many -t test:unit:prepare -p && vitest run",
-        "coverage:diff": "diff-cover --config-file diff-cover.toml apps/desktop/coverage/lcov.info packages/shared-components/coverage/lcov.info coverage/lcov.info"
+        "coverage:diff": "diff-cover --config-file diff-cover.toml apps/web/coverage/lcov.info packages/shared-components/coverage/lcov.info coverage/lcov.info"
     },
     "devDependencies": {
         "@action-validator/cli": "^0.6.0",

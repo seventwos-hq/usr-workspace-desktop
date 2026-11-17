@@ -247,6 +247,7 @@ overrides:
   '@types/react': ^19.2.10
   '@types/react-dom': ^19.2.3
   caniuse-lite: 1.0.30001810
+  sanitize-html@2 <2.18.2: ^2.18.2
   matrix-widget-api: ^1.20.0
   '@types/node': 25.9.3
   config-file-ts: 0.2.8-rc1
@@ -319,7 +320,7 @@ importers:
         version: 3.30.0
       eslint-plugin-element-call:
         specifier: github:element-hq/element-call#main&path:/eslint
-        version: https://codeload.github.com/element-hq/element-call/tar.gz/d46840ce81a0cae922f47765399d4afa995a9439#path:/eslint
+        version: https://codeload.github.com/element-hq/element-call/tar.gz/629031038f747a90beb599d033e425fca356d8df#path:/eslint
       eslint-plugin-element-web:
         specifier: workspace:*
         version: link:packages/eslint-plugin-element-web
@@ -688,8 +689,8 @@ importers:
         specifier: ^1.6.3
         version: 1.6.4
       sanitize-html:
-        specifier: 2.18.1
-        version: 2.18.1
+        specifier: ^2.18.2
+        version: 2.18.2
       tar-js:
         specifier: ^0.3.0
         version: 0.3.0
@@ -1542,8 +1543,8 @@ importers:
   packages/shared-utils:
     dependencies:
       sanitize-html:
-        specifier: 2.18.1
-        version: 2.18.1
+        specifier: ^2.18.2
+        version: 2.18.2
     devDependencies:
       '@microsoft/api-extractor':
         specifier: ^7.56.0
@@ -8697,8 +8698,8 @@ packages:
     resolution: {integrity: sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==}
     engines: {node: '>=12'}
 
-  eslint-plugin-element-call@https://codeload.github.com/element-hq/element-call/tar.gz/d46840ce81a0cae922f47765399d4afa995a9439#path:/eslint:
-    resolution: {gitHosted: true, integrity: sha512-aVgpBbZH/mxMp2DA0sOTlEa0Pu6lwxqlaYYlp38ZYLJQM7FEtPXfWclvjmas8jJDLgFoaA9gSkXrFVPzKaq6gg==, path: /eslint, tarball: https://codeload.github.com/element-hq/element-call/tar.gz/d46840ce81a0cae922f47765399d4afa995a9439}
+  eslint-plugin-element-call@https://codeload.github.com/element-hq/element-call/tar.gz/629031038f747a90beb599d033e425fca356d8df#path:/eslint:
+    resolution: {gitHosted: true, integrity: sha512-YiGea+0xfYdD8/YdRAfkFhOOp4PCqkrX/5P0vQl9jHmenYl1eIED5NZ1SI+9KuDMGeFn7+oJPzhUEEVuwQ1mUQ==, path: /eslint, tarball: https://codeload.github.com/element-hq/element-call/tar.gz/629031038f747a90beb599d033e425fca356d8df}
     version: 0.0.0
 
   eslint-plugin-react-web-api@5.28.0:
@@ -11901,8 +11902,8 @@ packages:
   sanitize-filename@1.6.4:
     resolution: {integrity: sha512-9ZyI08PsvdQl2r/bBIGubpVdR3RR9sY6RDiWFPreA21C/EFlQhmgo20UZlNjZMMZNubusLhAQozkA0Od5J21Eg==}
 
-  sanitize-html@2.18.1:
-    resolution: {integrity: sha512-2X5lC8fYla8YaT8g73Nj+HcLWXan5dLyCWLgVvaOmfw7JI78IRsyNtIDytTHdn7hBQbIkCah7Zbmd5jabzeDig==}
+  sanitize-html@2.18.2:
+    resolution: {integrity: sha512-LTQVNHBeKB5qIae9x2J2Fw68ORnES++8vzYaG7DFT8P4GVCJFeHffHnRUzf5Mrxfx+4GweIvMRqkBPHHodaVNg==}
     engines: {node: '>=22.12.0'}
 
   sax@1.6.1:
@@ -21255,7 +21256,7 @@ snapshots:
 
   escape-string-regexp@5.0.0: {}
 
-  eslint-plugin-element-call@https://codeload.github.com/element-hq/element-call/tar.gz/d46840ce81a0cae922f47765399d4afa995a9439#path:/eslint: {}
+  eslint-plugin-element-call@https://codeload.github.com/element-hq/element-call/tar.gz/629031038f747a90beb599d033e425fca356d8df#path:/eslint: {}
 
   eslint-plugin-react-web-api@5.28.0(@typescript/typescript6@6.0.2)(eslint@10.12.0)(supports-color@7.2.0):
     dependencies:
@@ -24991,7 +24992,7 @@ snapshots:
     dependencies:
       truncate-utf8-bytes: 1.0.2
 
-  sanitize-html@2.18.1:
+  sanitize-html@2.18.2:
     dependencies:
       escape-string-regexp: 4.0.0
       htmlparser2: 12.0.0

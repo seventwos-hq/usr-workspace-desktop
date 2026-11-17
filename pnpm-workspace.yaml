@@ -105,8 +105,6 @@ patchedDependencies:
   linkify-html: patches/linkify-html.patch
   # Workaround to access a private API
   "@types/auto-launch": patches/@types__auto-launch.patch
-  # Workaround for jsdom being super opinionated and making it hard to tweak global properties
-  jsdom: patches/jsdom.patch
   # Workaround for some babel rules being false positively flagged
   knip: patches/knip.patch
   # Workaround for being stuck on an old version of plist due to electron-builder not supporting ESM yet

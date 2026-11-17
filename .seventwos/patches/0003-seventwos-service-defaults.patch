@@ -1,0 +1,173 @@
+diff --git a/apps/web/config.sample.json b/apps/web/config.sample.json
+index 69339ee31ef1f9ca7347f67ed01e45ade9cb8b4b..3f8d054bb1fdf9f7d9a6df94348a0de4fe3db60d 100644
+--- a/apps/web/config.sample.json
++++ b/apps/web/config.sample.json
+@@ -1,11 +1,8 @@
+ {
+     "default_server_config": {
+         "m.homeserver": {
+-            "base_url": "https://matrix-client.matrix.org",
+-            "server_name": "matrix.org"
+-        },
+-        "m.identity_server": {
+-            "base_url": "https://vector.im"
++            "base_url": "https://workspace.seventwos.org",
++            "server_name": "workspace.seventwos.org"
+         }
+     },
+     "disable_custom_urls": false,
+@@ -29,11 +26,10 @@
+     "default_federate": true,
+     "default_theme": "light",
+     "room_directory": {
+-        "servers": ["matrix.org"]
++        "servers": ["workspace.seventwos.org"]
+     },
+     "enable_presence_by_hs_url": {
+-        "https://matrix.org": false,
+-        "https://matrix-client.matrix.org": false
++        "https://workspace.seventwos.org": false
+     },
+     "setting_defaults": {
+         "breadcrumbs": true
+diff --git a/apps/web/src/SdkConfig.ts b/apps/web/src/SdkConfig.ts
+index e77c7af9ebcca3225f3d6bac659cc86246fb2219..c563dcf5400c2a52890bc04f4b9f3cf05bb6e0ca 100644
+--- a/apps/web/src/SdkConfig.ts
++++ b/apps/web/src/SdkConfig.ts
+@@ -51,8 +51,8 @@ export const DEFAULTS = {
+ 
+     feedback: {
+         existing_issues_url:
+-            "https://github.com/vector-im/element-web/issues?q=is%3Aopen+is%3Aissue+sort%3Areactions-%2B1-desc",
+-        new_issue_url: "https://github.com/vector-im/element-web/issues/new/choose",
++            "https://seventwos.com/",
++        new_issue_url: "https://seventwos.com/",
+     },
+ 
+     desktop_builds: {
+diff --git a/apps/web/src/components/views/auth/AuthFooter.tsx b/apps/web/src/components/views/auth/AuthFooter.tsx
+index 07abe145b1314940b188312f724eba9b33376b12..2850690c71c652c37d262a40234c3ea7d88f99f4 100644
+--- a/apps/web/src/components/views/auth/AuthFooter.tsx
++++ b/apps/web/src/components/views/auth/AuthFooter.tsx
+@@ -10,14 +10,10 @@ Please see LICENSE files in the repository root for full details.
+ import React, { type JSX, type ReactElement } from "react";
+ 
+ import SdkConfig from "../../../SdkConfig";
+-import { _t } from "../../../languageHandler";
+ 
+ const AuthFooter = (): ReactElement => {
+     const brandingConfig = SdkConfig.getObject("branding");
+-    const links = brandingConfig?.get("auth_footer_links") ?? [
+-        { text: "Mastodon", url: "https://mastodon.matrix.org/@Element" },
+-        { text: "GitHub", url: "https://github.com/element-hq/element-web" },
+-    ];
++    const links = brandingConfig?.get("auth_footer_links") ?? [];
+ 
+     const authFooterLinks: JSX.Element[] = [];
+     for (const linkEntry of links) {
+@@ -31,9 +27,6 @@ const AuthFooter = (): ReactElement => {
+     return (
+         <footer className="mx_AuthFooter" role="contentinfo">
+             {authFooterLinks}
+-            <a href="https://matrix.org" target="_blank" rel="noreferrer noopener">
+-                {_t("powered_by_matrix")}
+-            </a>
+         </footer>
+     );
+ };
+diff --git a/apps/web/src/components/views/auth/__snapshots__/AuthFooter.test.tsx.snap b/apps/web/src/components/views/auth/__snapshots__/AuthFooter.test.tsx.snap
+index fc73c4686ff8ef95194f1c8eb8ee95fda559c96d..4b44ef34d4cdfb65e7699f88d279ee05dc15ff3f 100644
+--- a/apps/web/src/components/views/auth/__snapshots__/AuthFooter.test.tsx.snap
++++ b/apps/web/src/components/views/auth/__snapshots__/AuthFooter.test.tsx.snap
+@@ -5,35 +5,6 @@ exports[`<AuthFooter /> > should match snapshot 1`] = `
+   <footer
+     class="mx_AuthFooter"
+     role="contentinfo"
+-  >
+-    <a
+-      href="https://element.io/blog"
+-      rel="noreferrer noopener"
+-      target="_blank"
+-    >
+-      Blog
+-    </a>
+-    <a
+-      href="https://mastodon.matrix.org/@Element"
+-      rel="noreferrer noopener"
+-      target="_blank"
+-    >
+-      Mastodon
+-    </a>
+-    <a
+-      href="https://github.com/element-hq/element-web"
+-      rel="noreferrer noopener"
+-      target="_blank"
+-    >
+-      GitHub
+-    </a>
+-    <a
+-      href="https://matrix.org"
+-      rel="noreferrer noopener"
+-      target="_blank"
+-    >
+-      Powered by Matrix
+-    </a>
+-  </footer>
++  />
+ </DocumentFragment>
+ `;
+diff --git a/apps/web/src/components/views/auth/__snapshots__/AuthPage.test.tsx.snap b/apps/web/src/components/views/auth/__snapshots__/AuthPage.test.tsx.snap
+index eb74b54d5bd14024cb5b451437564c37e3235794..d4271ab96c7b36bd86ba9750078a3eafc8e96db5 100644
+--- a/apps/web/src/components/views/auth/__snapshots__/AuthPage.test.tsx.snap
++++ b/apps/web/src/components/views/auth/__snapshots__/AuthPage.test.tsx.snap
+@@ -24,36 +24,7 @@ exports[`<AuthPage /> > should match snapshot 1`] = `
+     <footer
+       class="mx_AuthFooter"
+       role="contentinfo"
+-    >
+-      <a
+-        href="https://element.io/blog"
+-        rel="noreferrer noopener"
+-        target="_blank"
+-      >
+-        Blog
+-      </a>
+-      <a
+-        href="https://mastodon.matrix.org/@Element"
+-        rel="noreferrer noopener"
+-        target="_blank"
+-      >
+-        Mastodon
+-      </a>
+-      <a
+-        href="https://github.com/element-hq/element-web"
+-        rel="noreferrer noopener"
+-        target="_blank"
+-      >
+-        GitHub
+-      </a>
+-      <a
+-        href="https://matrix.org"
+-        rel="noreferrer noopener"
+-        target="_blank"
+-      >
+-        Powered by Matrix
+-      </a>
+-    </footer>
++    />
+   </div>
+ </DocumentFragment>
+ `;
+diff --git a/apps/web/src/vector/mobile_guide/mobile-apps.ts b/apps/web/src/vector/mobile_guide/mobile-apps.ts
+index 45a1d63df32b80cee93e2d44d3a7216aafbc456c..9ede0b96b40a18117efcec3b4555781b879c5ba0 100644
+--- a/apps/web/src/vector/mobile_guide/mobile-apps.ts
++++ b/apps/web/src/vector/mobile_guide/mobile-apps.ts
+@@ -6,7 +6,7 @@ Please see LICENSE files in the repository root for full details.
+ */
+ 
+ /*
+- * Shared code that is used by the mobile guide and the the Seventwos mobile site site.
++ * Shared code that is used by the mobile guide and the Seventwos mobile site.
+  */
+ 
+ export enum MobileAppVariant {

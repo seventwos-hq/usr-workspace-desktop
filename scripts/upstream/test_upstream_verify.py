@@ -26,6 +26,13 @@ SUPPORT = {"package.json": b'{"scripts": {"postinstall": "node scripts/pnpm-link
                b'export default { rules: { "no-eval": "error" } };\n'
            )}
 
+WEB_PATCH = """--- a/apps/web/src/a.ts
++++ b/apps/web/src/a.ts
+@@ -1 +1 @@
+-export const a = 1;
++export const a = 2;
+"""
+
 
 def make_tarball(files: dict) -> bytes:
     buf = io.BytesIO()
@@ -85,6 +92,58 @@ class UpstreamVerifyTests(unittest.TestCase):
 
     def verify(self):
         return UV.verify("main", "HEAD", fetch=self.fetch)
+
+    def add_patches(self, patches: dict, lines=None):
+        for name, body in patches.items():
+            self.write(f".seventwos/patches/{name}", body.encode())
+        if lines is None:
+            lines = [f"{name} reason" for name in patches]
+        self.write(".seventwos/patches/series", ("\n".join(lines) + "\n").encode())
+        self.commit("patches")
+
+    def test_patches_that_apply_pass_after_byte_identity(self):
+        self.accept_import()
+        self.add_patches({"0001-a.patch": WEB_PATCH})
+        result = self.verify()
+        self.assertIn("no upstream import", result)
+        self.assertIn("1 patches apply cleanly", result)
+
+    def test_import_with_patches_checks_both(self):
+        self.import_web()
+        self.add_patches({"0001-a.patch": WEB_PATCH})
+        result = self.verify()
+        self.assertIn("byte-identical", result)
+        self.assertIn("1 patches apply cleanly", result)
+
+    def test_patch_that_no_longer_applies_fails(self):
+        self.accept_import()
+        self.add_patches({"0001-a.patch": WEB_PATCH.replace("= 1;", "= 9;", 1)})
+        with self.assertRaisesRegex(UV.VerifyError, "0001-a.patch no longer applies"):
+            self.verify()
+
+    def test_patch_series_must_list_every_patch(self):
+        self.accept_import()
+        self.add_patches({"0001-a.patch": WEB_PATCH}, ["# empty"])
+        with self.assertRaisesRegex(UV.VerifyError, "unlisted 0001-a.patch"):
+            self.verify()
+
+    def test_patch_needs_reason(self):
+        self.accept_import()
+        self.add_patches({"0001-a.patch": WEB_PATCH}, ["0001-a.patch"])
+        with self.assertRaisesRegex(UV.VerifyError, "series line 1"):
+            self.verify()
+
+    def test_patch_outside_upstream_paths_fails(self):
+        self.accept_import()
+        self.add_patches({"0001-a.patch": WEB_PATCH.replace("apps/web/src/a.ts", "README.md")})
+        with self.assertRaisesRegex(UV.VerifyError, "outside apps/web and packages"):
+            self.verify()
+
+    def test_patch_cannot_hide_a_modified_import(self):
+        self.import_web({**WEB, "apps/web/src/a.ts": b"export const a = 2;\n"})
+        self.add_patches({"0001-a.patch": WEB_PATCH})
+        with self.assertRaisesRegex(UV.VerifyError, "content differs: apps/web/src/a.ts"):
+            self.verify()
 
     def test_non_import_change_passes(self):
         self.write("README.md", b"y\n")

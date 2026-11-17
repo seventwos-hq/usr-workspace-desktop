@@ -1,0 +1,55 @@
+diff --git a/packages/shared-components/src/core/i18n/i18n.test.ts b/packages/shared-components/src/core/i18n/i18n.test.ts
+index 94aebd7c2fdc26b275f42026e53e4dba69322282..a9068d9a7dacd5b4aaabc756e0abd211bc88bc66 100644
+--- a/packages/shared-components/src/core/i18n/i18n.test.ts
++++ b/packages/shared-components/src/core/i18n/i18n.test.ts
+@@ -8,7 +8,7 @@
+ import counterpart from "counterpart";
+ import { vi, describe, it, beforeEach, expect } from "vitest";
+ 
+-import { registerTranslations, setMissingEntryGenerator, getLocale, setLocale } from "./i18n";
++import { registerTranslations, setMissingEntryGenerator, getLocale, setLocale, sanitizeForTranslation } from "./i18n";
+ 
+ describe("i18n utils", () => {
+     beforeEach(() => {
+@@ -44,4 +44,26 @@ describe("i18n utils", () => {
+         setLocale("en");
+         expect(counterpart.setLocale).toHaveBeenCalledWith("en");
+     });
++
++    describe("sanitizeForTranslation", () => {
++        it("neutralises variable placeholders", () => {
++            expect(sanitizeForTranslation("Hi %(name)s")).toBe("Hi %\xa0(name)s");
++        });
++
++        it("neutralises nested and unclosed placeholders", () => {
++            expect(sanitizeForTranslation("%(a%(b)s")).toBe("%\xa0(a%\xa0(b)s");
++            expect(sanitizeForTranslation("%(open")).toBe("%\xa0(open");
++        });
++
++        it("leaves text without placeholders unchanged", () => {
++            expect(sanitizeForTranslation("100% (approx)")).toBe("100% (approx)");
++        });
++
++        it("handles long runs of unclosed openers quickly", () => {
++            const input = "%(".repeat(100_000);
++            const start = performance.now();
++            expect(sanitizeForTranslation(input)).toBe("%\xa0(".repeat(100_000));
++            expect(performance.now() - start).toBeLessThan(1000);
++        });
++    });
+ });
+diff --git a/packages/shared-components/src/core/i18n/i18n.tsx b/packages/shared-components/src/core/i18n/i18n.tsx
+index 676df542c2c26007f512d1ace6e20c99051c44af..7771bf51c2919abd733658f15797a751e7af6ba2 100644
+--- a/packages/shared-components/src/core/i18n/i18n.tsx
++++ b/packages/shared-components/src/core/i18n/i18n.tsx
+@@ -230,7 +230,9 @@ export function _tDom(text: TranslationKey, variables?: IVariables, tags?: Tags)
+  */
+ export function sanitizeForTranslation(text: string): string {
+     // Add a non-breaking space so the regex doesn't trigger when translating.
+-    return text.replace(/%\(([^)]*)\)/g, "%\xa0($1)");
++    // Neutralise every "%(" opener in linear time; matching through to ")" was
++    // quadratic on inputs with many unclosed "%(" sequences and missed nested ones.
++    return text.replaceAll("%(", "%\xa0(");
+ }
+ 
+ /*

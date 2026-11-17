@@ -1,0 +1,9 @@
+# Our changes to the upstream web app, applied in this order at build time by
+# scripts/upstream/apply_patches.py. apps/web and packages stay identical to the
+# pinned upstream release; the upstream check fails if any patch stops applying.
+# Format: <patch file>  <one-line reason>
+0001-seventwos-web-branding.patch  Seventwos names, links and help pages instead of Element ones
+0002-remove-default-call-domain-and-help-links.patch  No default third-party video-call domain; drop help links that point at Element
+0003-seventwos-service-defaults.patch  Default configuration uses only Seventwos services
+0004-remove-unreachable-links.patch  Remove links that no longer resolve and the default video-call domain
+0005-harden-translation-text.patch  Harden translation text handling

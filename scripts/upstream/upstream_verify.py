@@ -13,6 +13,9 @@ Rules for a pull request (base..head):
     must match (content, executable bit, symlink target) the pinned tarball,
     except for the exact local license header in oxlint.config.ts, and
     .seventwos/upstream-state.json must carry "pinnedTag" equal to the pin.
+  * Then, if the head has .seventwos/patches/series, every listed patch must
+    apply in order, exactly (no fuzz), to the head's apps/web and packages;
+    an unlisted or missing patch file or a patch that touches other paths fails.
 Exit 0 = pass, 1 = verification failed, 2 = setup error (fail closed).
 """
 from __future__ import annotations
@@ -24,6 +27,7 @@ import json
 import subprocess
 import sys
 import tarfile
+import tempfile
 import urllib.request
 from pathlib import PurePosixPath
 
@@ -44,6 +48,9 @@ LOCAL_LINT_HEADER = (
 ALLOWED_FILES = {STATE_PATH, LEDGER_PATH, "pnpm-lock.yaml", "pnpm-workspace.yaml", *IMPORT_FILES}
 ALLOWED_PREFIXES = ("patches/",)
 MAX_TARBALL_BYTES = 200 * 1024 * 1024
+# Our own changes to the upstream copy, applied at build time (scripts/upstream/apply_patches.py).
+PATCH_DIR = ".seventwos/patches"
+PATCH_SERIES = f"{PATCH_DIR}/series"
 
 
 class VerifyError(Exception):
@@ -97,7 +104,9 @@ def pinned_tag_at(ref: str):
 
 
 def check_allowlist(paths: list[str]) -> list[str]:
-    return [p for p in paths if not (p.startswith(IMPORT_PREFIXES + ALLOWED_PREFIXES) or p in ALLOWED_FILES)]
+    # A version bump may refresh our patches in the same change; they are checked after the import.
+    return [p for p in paths if not (p.startswith(IMPORT_PREFIXES + ALLOWED_PREFIXES + (PATCH_DIR + "/",))
+                                     or p in ALLOWED_FILES)]
 
 
 def download(url: str) -> bytes:
@@ -174,7 +183,53 @@ def compare(expected: dict, actual: dict) -> list[str]:
     return problems
 
 
+def check_patches(head: str) -> str:
+    """Apply the head's patch series to a scratch copy of the head's upstream paths."""
+    try:
+        series = git("show", f"{head}:{PATCH_SERIES}")
+    except subprocess.CalledProcessError:
+        return "no patch series"
+    entries: list[str] = []
+    for lineno, line in enumerate(series.splitlines(), 1):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        name, _, reason = line.partition(" ")
+        if not name.endswith(".patch") or "/" in name or not reason.strip() or name in entries:
+            raise VerifyError(f"{PATCH_SERIES} line {lineno}: need a unique '<name>.patch <reason>'")
+        entries.append(name)
+    listed = git("ls-tree", "-z", "--name-only", f"{head}:{PATCH_DIR}")
+    on_disk = {n for n in listed.split("\0") if n.endswith(".patch")}
+    if on_disk != set(entries):
+        raise VerifyError("patch files and series differ: missing " + ", ".join(sorted(set(entries) - on_disk))
+                          + "; unlisted " + ", ".join(sorted(on_disk - set(entries))))
+    if not entries:
+        return "no patches listed"
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run(["git", "init", "-q", tmp], check=True, capture_output=True)
+        archive = git("archive", "--format=tar", head, "--", *[p.rstrip("/") for p in IMPORT_PREFIXES], binary=True)
+        with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+            tar.extractall(tmp, filter="data")
+        for name in entries:
+            data = git("show", f"{head}:{PATCH_DIR}/{name}", binary=True)
+            for line in data.decode(errors="replace").splitlines():
+                if line.startswith(("--- ", "+++ ")):
+                    path = line[4:].split("\t")[0]
+                    rel = path[2:] if path[:2] in ("a/", "b/") else path
+                    if path != "/dev/null" and (not rel.startswith(IMPORT_PREFIXES) or ".." in rel.split("/")):
+                        raise VerifyError(f"{name} touches a path outside apps/web and packages: {rel}")
+            res = subprocess.run(["git", "apply", "--whitespace=nowarn", "-"], cwd=tmp, input=data, capture_output=True)
+            if res.returncode:
+                raise VerifyError(f"{name} no longer applies:\n  {res.stderr.decode().strip()}")
+    return f"{len(entries)} patches apply cleanly"
+
+
 def verify(base: str, head: str, fetch=download) -> str:
+    result = verify_import(base, head, fetch)
+    return f"{result}; {check_patches(head)}"
+
+
+def verify_import(base: str, head: str, fetch=download) -> str:
     pin = read_pin(base)
     paths = changed_paths(base, head)
     if not is_import(paths, base, head):

@@ -18,4 +18,7 @@ fi
 
 DIST_VERSION=$("$DIR"/normalize-version.sh "$DIST_VERSION")
 
+# Apply our reviewed changes to the upstream web app; fails on any patch that does not apply.
+python3 "$DIR"/upstream/apply_patches.py --root "$DIR/.."
+
 VERSION=$DIST_VERSION pnpm --dir apps/web build

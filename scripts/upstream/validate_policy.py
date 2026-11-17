@@ -23,7 +23,7 @@ MANDATORY_EVIDENCE = (
     "existingProfileMigration",
 )
 MANDATORY_MAPPINGS = (
-    ("apps/web/**", None, "forbidden"),
+    ("apps/web/**", "apps/web/**", "upstream-import-only"),
     ("apps/desktop/**", "apps/desktop/**", "selective-review"),
     ("packages/**", "packages/**", "selective-review"),
     ("modules/**", "modules/**", "protected-divergence"),
@@ -32,7 +32,7 @@ MANDATORY_MAPPINGS = (
     ("none", ".seventwos/**", "protected-divergence"),
 )
 MANDATORY_INVARIANTS = {
-    "no-apps-web": "apps/web must remain absent from the repository.",
+    "web-import-only": "apps/web may change only by a byte-identical import of the pinned upstream release, verified by upstream-verify.",
     "immutable-bundle-only": "A selected bundle must use an immutable release tag, exact HTTPS URL, and SHA-256 digest.",
     "verified-selection-evidence": "Signature, provenance, rollback, capability-denial, network-destination, visual, and existing-profile migration evidence must pass before selection.",
     "protect-seventwos-divergence": "Seventwos UI, product, auth, storage, profile migration, configuration, and release paths require repository ownership review.",
@@ -75,6 +75,9 @@ def require(condition: bool, message: str) -> None:
 
 
 def validate_policy_files() -> tuple[dict, dict, dict]:
+    web = ROOT / "apps/web"
+    require(not web.exists() and not web.is_symlink(), "apps/web must remain absent until upstream-verify enforces byte-identical imports")
+
     for path in REQUIRED_FILES.values():
         require(path.is_file(), f"missing required policy file: {path.relative_to(ROOT)}")
 
@@ -120,7 +123,6 @@ def validate_policy_semantics(policy: dict, state: dict, path_map: dict, invaria
     require(policy.get("protectedDivergence", {}).get("codeowners") == "CODEOWNERS", "protected divergence must require CODEOWNERS")
     require(policy.get("ledger", {}).get("path") == ".seventwos/upstream-ledger.jsonl", "ledger path must remain pinned")
     require(policy.get("ledger", {}).get("appendOnly") is True, "ledger must remain append-only")
-    require(not (ROOT / "apps" / "web").exists(), "apps/web must remain absent")
 
     mappings = path_map.get("mappings")
     require(isinstance(mappings, list), "path-map mappings must be an array")

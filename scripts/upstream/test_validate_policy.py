@@ -21,6 +21,23 @@ class ValidatePolicyTests(unittest.TestCase):
     def test_repository_policy_is_valid(self) -> None:
         VALIDATOR.validate_ledger()
 
+    def test_local_web_tree_is_rejected(self) -> None:
+        for kind in ("directory", "file", "dangling-symlink"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                web = root / "apps/web"
+                web.parent.mkdir()
+                if kind == "directory":
+                    web.mkdir()
+                    (web / "index.html").write_text("untrusted", encoding="utf-8")
+                elif kind == "file":
+                    web.write_text("untrusted", encoding="utf-8")
+                else:
+                    web.symlink_to(root / "missing", target_is_directory=True)
+                with mock.patch.object(VALIDATOR, "ROOT", root):
+                    with self.assertRaisesRegex(VALIDATOR.ValidationError, "apps/web must remain absent"):
+                        VALIDATOR.validate_policy_files()
+
     def test_pending_evidence_cannot_be_selected(self) -> None:
         selected = {
             "evidenceId": self.evidence["evidenceId"],
@@ -198,7 +215,7 @@ class ValidatePolicyTests(unittest.TestCase):
         state = VALIDATOR.load_json(VALIDATOR.REQUIRED_FILES["state"])
         path_map = VALIDATOR.load_json(VALIDATOR.REQUIRED_FILES["path_map"])
         invariants = VALIDATOR.load_json(VALIDATOR.REQUIRED_FILES["invariants"])
-        invariants["invariants"][0]["statement"] = "apps/web is usually absent."
+        invariants["invariants"][0]["statement"] = "apps/web may change freely."
         with self.assertRaisesRegex(VALIDATOR.ValidationError, "removed or weakened"):
             VALIDATOR.validate_policy_semantics(policy, state, path_map, invariants)
 

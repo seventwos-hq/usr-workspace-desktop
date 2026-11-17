@@ -2,7 +2,7 @@
  * Copyright 2026 Element Creations Ltd.
  * Copyright 2025 New Vector Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -19,6 +19,8 @@ export * from "./room/composer/Banner";
 export * from "./room/composer/UploadButton";
 export * from "./room/composer/MessageComposerUrlPreview/index.ts";
 export * from "./crypto/SasEmoji";
+export * from "./crypto/LegacyCryptoUnsupportedView";
+export * from "./crypto/DeleteKeyStorageView";
 export * from "./menus/UserMenu";
 export * from "./notifications/NotificationBadgeView";
 export * from "./room/timeline/ReadMarker";
@@ -40,8 +42,12 @@ export * from "./core/pill-input/Pill";
 export * from "./core/pill-input/PillInput";
 export * from "./room/RoomStatusBar";
 export * from "./room/WidgetPip";
+export * from "./room/ElementCallAppTile";
+export * from "./room/ElementCallMockView";
 export * from "./room/HistoryVisibilityBadge";
+export * from "./room/right-panel/DocumentViewerView";
 export * from "./room/right-panel/PdfViewerView";
+export * from "./room/right-panel/MarkdownViewerView";
 export * from "./room/right-panel/WidgetContextMenuView";
 export * from "./room/timeline/DateSeparatorView";
 export * from "./room/timeline/TimelineSeparator";
@@ -69,7 +75,7 @@ export * from "./room/timeline/event-tile/reactions/ReactionsRow";
 export * from "./room/timeline/event-tile/reactions/ReactionsRowButton";
 export * from "./room/timeline/event-tile/reactions/ReactionsRowButtonTooltip";
 export * from "./room/timeline/event-tile/timestamp/MessageTimestampView";
-export * from "./room/timeline/event-tile/UrlPreviewGroupView";
+export * from "./room/timeline/event-tile/MediaPreviewGroupView";
 export * from "./core/rich-list/RichItem";
 export * from "./core/rich-list/RichList";
 export * from "./room-list/RoomListHeaderView";
@@ -88,6 +94,7 @@ export * from "./core/utils/Scrollbar";
 export * from "./core/VirtualizedList";
 export * from "./resize";
 export * from "./core/RoomPickerView";
+export * from "./core/toast";
 
 // Utils
 export * from "./core/i18n/i18n";
@@ -99,7 +106,7 @@ export * from "./core/utils/FormattingUtils";
 export * from "./core/utils/ToastContext";
 export * from "./core/i18n/I18nApi";
 export * from "./core/utils/linkify";
-export type * from "./core/userStatus.ts";
+export * from "./core/userStatus.ts";
 export * from "./room/avatar/RoomAvatar";
 export * from "./status/SetStatusView";
 export * from "./status/StatusTextView";

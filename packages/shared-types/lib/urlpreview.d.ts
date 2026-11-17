@@ -1,7 +1,7 @@
 /*
  * Copyright 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -86,4 +86,26 @@ export interface UrlPreview {
      * Additional keys to be included in a bundled preview. May be undefined.
      */
     additionalBundleContent?: Record<string, unknown>;
+}
+
+/** Snapshot data for the URL previews attached to an event. */
+export interface UrlPreviewGroupViewSnapshot {
+    /** URL previews to render. */
+    previews: Array<UrlPreview>;
+    /** Total number of previews available before limiting. */
+    totalPreviewCount: number;
+    /** Whether the preview list is currently limited. */
+    previewsLimited: boolean;
+    /** Whether more previews exist than are currently rendered. */
+    overPreviewLimit: boolean;
+}
+
+/** User actions accepted by the URL preview group. */
+export interface UrlPreviewGroupViewActions {
+    /** Invoked when the preview limit toggle is clicked. */
+    onTogglePreviewLimit: () => void;
+    /** Invoked when the hide-preview action is clicked. */
+    onHideClick: () => Promise<void>;
+    /** Invoked when a preview image is clicked. */
+    onImageClick: (preview: UrlPreview) => void;
 }

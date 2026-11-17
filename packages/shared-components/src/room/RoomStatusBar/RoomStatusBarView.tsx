@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2025 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -214,7 +214,7 @@ export function RoomStatusBarView({ vm }: Readonly<RoomStatusBarViewProps>): JSX
                                 target="_blank"
                                 rel="noreferrer noopener"
                             >
-                                Contact admin
+                                {_t("room|status_bar|contact_account_provider")}
                             </Button>
                         )
                     }

@@ -1,7 +1,7 @@
 /*
  * Copyright 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -12,6 +12,8 @@ import { type ViewModel, useViewModel } from "../../../../../core/viewmodel";
 import { useI18n } from "../../../../../core/i18n/i18nContext";
 import styles from "./MjolnirBodyView.module.css";
 
+// The view has no state, only an action, so the snapshot is intentionally empty
+// oxlint-disable-next-line typescript/no-generated-empty-object-type
 export type MjolnirBodyViewSnapshot = Record<never, never>;
 
 export interface MjolnirBodyViewActions {

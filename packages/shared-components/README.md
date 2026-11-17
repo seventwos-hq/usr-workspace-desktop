@@ -1,9 +1,10 @@
 # @element-hq/web-shared-components
 
-Internal shared React components library used across Seventwos Workspace for Desktop and its modules.
-This package is inherited from Element Web and is maintained here for use within this monorepo only; it
-is not published as a standalone public library by this fork. This package provides opinionated UI
-components built on top of the [Compound Design System](https://compound.element.io) and [Compound
+[Online storybook](https://shared-components-storybook.element.dev)
+
+Shared React components library for Element Web, Aurora, Element
+modules... This package provides opinionated UI components built on top of the
+[Compound Design System](https://compound.element.io) and [Compound
 Web](https://github.com/element-hq/compound-web). This is not a design system
 by itself, but rather a set of larger components.
 
@@ -365,24 +366,17 @@ fail.
 Screenshots are located in `packages/shared-components/__vis__/`.
 
 > [!IMPORTANT]
-> In case of docker issues with Playwright, see [Supported Container Runtimes](../../docs/playwright.md#supported-container-runtimes).
+> In case of docker issues with Playwright, see [playwright EW documentation](https://github.com/element-hq/element-web/blob/develop/docs/playwright.md#supported-container-runtimes).
 
 ### Translations
 
+First see our [translation guide](../../docs/translating.md) and [translation dev guide](../../docs/translating-dev.md).
 To generate translation strings for this package, run:
 
 ```bash
 pnpm i18n
 ```
 
-## Copyright & License
+## Publish a new version
 
-Copyright (c) 2026 Element Creations Ltd.
-
-Seventwos distributes this component under the GNU Affero General Public License v3 only.
-See [LICENSE-AGPL-3.0](https://github.com/seventwos-hq/usr-workspace-desktop/blob/main/LICENSE-AGPL-3.0)
-for the applicable terms.
-
-## Versioning
-
-This package is private and internal to this monorepo (see [`../RELEASING.md`](../RELEASING.md)); it is not published to any registry.
+To carry out a release, see the documentation at [`../RELEASING.md`](../RELEASING.md).

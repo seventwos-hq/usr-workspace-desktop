@@ -1,7 +1,7 @@
 /*
 Copyright 2025 New Vector Ltd.
 
-SPDX-License-Identifier: AGPL-3.0-only
+SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 Please see LICENSE files in the repository root for full details.
 */
 
@@ -35,6 +35,23 @@ export type OriginalMessageComponentProps = {
 };
 
 /**
+ * Controls how a custom message is grouped in the timeline.
+ * @alpha Subject to change.
+ */
+export interface CustomMessageGrouping {
+    /**
+     * Adjacent events from the same renderer are summarized together when their keys match.
+     * When omitted, all adjacent events from that renderer share a key.
+     */
+    getKey?: (mxEvent: MatrixEvent) => string;
+    /**
+     * Returns the collapsed summary for the visible events in this group.
+     * This function must be synchronous.
+     */
+    getSummary: (events: readonly MatrixEvent[]) => string;
+}
+
+/**
  * Hints to specify to Element when rendering events.
  * @alpha Subject to change.
  */
@@ -52,6 +69,21 @@ export type CustomMessageRenderHints = {
      * If this function is not supplied, media downloads are allowed.
      */
     allowDownloadingMedia?: (mxEvent: MatrixEvent) => Promise<boolean>;
+    /**
+     * Should the event be formatted as an informational message.
+     * Default is false.
+     */
+    renderAsInfoMessage?: boolean;
+    /**
+     * Should the sender's profile be rendered for this event.
+     * Default is true.
+     */
+    renderSenderProfile?: boolean;
+    /**
+     * Custom summary text for grouped messages. The summary is combined with
+     * descriptions of other events in the group.
+     */
+    renderGroupSummary?: CustomMessageGrouping;
 };
 
 /**

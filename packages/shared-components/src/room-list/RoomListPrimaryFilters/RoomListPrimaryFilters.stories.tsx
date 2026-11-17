@@ -1,7 +1,7 @@
 /*
  * Copyright 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -65,7 +65,7 @@ export const NarrowContainer: Story = {
     },
     decorators: [
         (Story) => (
-            <div style={{ width: "180px", border: "1px dashed var(--cpd-color-border-interactive-secondary)" }}>
+            <div style={{ width: "170px", border: "1px dashed var(--cpd-color-border-interactive-secondary)" }}>
                 <Story />
             </div>
         ),
@@ -83,7 +83,7 @@ export const NarrowWithActiveWrappingFilter: Story = {
     },
     decorators: [
         (Story) => (
-            <div style={{ width: "180px", border: "1px dashed var(--cpd-color-border-interactive-secondary)" }}>
+            <div style={{ width: "170px", border: "1px dashed var(--cpd-color-border-interactive-secondary)" }}>
                 <Story />
             </div>
         ),

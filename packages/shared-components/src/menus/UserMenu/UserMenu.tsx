@@ -1,7 +1,7 @@
 /*
  * Copyright 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -139,7 +139,14 @@ export function UserMenuView({ vm, className }: UserMenuViewProps): JSX.Element 
     const trigger = (
         <button className={styles.triggerButton} aria-label={_t("menus|user_menu|title")} type="button">
             <div className={styles.avatarWrapper}>
-                <Avatar id={userId} name={displayName} type="round" size="36px" src={avatarUrl} />
+                <Avatar
+                    id={userId}
+                    name={displayName}
+                    type="round"
+                    size="36px"
+                    src={avatarUrl}
+                    className={userStatus ? styles.avatarWithStatus : undefined}
+                />
                 {userStatus && (
                     <Text as="div" className={styles.iconStatusEmoji}>
                         {userStatus.emoji}

@@ -3,7 +3,7 @@ Copyright 2026 Element Creations Ltd.
 Copyright 2024 New Vector Ltd.
 Copyright 2019 The Matrix.org Foundation C.I.C.
 
-SPDX-License-Identifier: AGPL-3.0-only
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
 Please see LICENSE files in the repository root for full details.
 */
 
@@ -51,7 +51,7 @@ const createVm = (
 
 describe("ViewSourceEventView", () => {
     const getToggleButton = (container: HTMLElement): HTMLButtonElement => {
-        const button = container.querySelector<HTMLButtonElement>('button[aria-label="toggle event"]');
+        const button = container.querySelector<HTMLButtonElement>('button[aria-label="Event source"]');
 
         if (!button) {
             throw new Error("Expected view source toggle button to be rendered");

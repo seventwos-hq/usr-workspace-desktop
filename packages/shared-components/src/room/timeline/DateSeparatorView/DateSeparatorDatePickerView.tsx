@@ -1,7 +1,7 @@
 /*
  * Copyright 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -38,7 +38,9 @@ export const DateSeparatorDatePickerView: React.FC<DateSeparatorDatePickerViewPr
     onDismissed,
 }): JSX.Element => {
     const snapshot = useViewModel(vm);
-    const date = snapshot.jumpFromDate ? new Date(snapshot.jumpFromDate) : new Date();
+    // Captured once on mount so render stays pure
+    const [today] = useState(() => new Date());
+    const date = snapshot.jumpFromDate ? new Date(snapshot.jumpFromDate) : today;
     const dateInputDefaultValue = formatDateForInput(date);
 
     const { translate: _t } = useI18n();
@@ -112,7 +114,7 @@ export const DateSeparatorDatePickerView: React.FC<DateSeparatorDatePickerViewPr
                         onInput={onDateValueInput}
                         onKeyDown={onDateInputKeyDown}
                         value={dateValue}
-                        max={formatDateForInput(new Date())}
+                        max={formatDateForInput(today)}
                         className={styles.picker_input_date}
                     />
                 </Field>

@@ -1,7 +1,7 @@
 /*
  * Copyright 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -27,6 +27,7 @@ const {
     StoryPadlock,
     StoryMediaBody,
     StoryNotificationBadge,
+    StoryOngoingCallBody,
     StoryPreviewBody,
     StoryShortBody,
     StoryReplyChain,
@@ -55,6 +56,7 @@ const meta = {
         shape: { table: { disable: true } },
         containerWidth: { table: { disable: true } },
         showSenderAndAvatar: { table: { disable: true } },
+        hideTimestamp: { table: { disable: true } },
         classNames: { table: { disable: true } },
         state: { table: { disable: true } },
         line: { table: { disable: true } },
@@ -244,6 +246,26 @@ export const LeftAlignedBubble: Story = {
         showSenderAndAvatar: false,
         state: { leftAlignedBubble: true, hasReply: false },
         slots: { body: <StoryInformationalBody>Alex started a voice call.</StoryInformationalBody> },
+    },
+};
+
+export const LeftAlignedBubbleCallTile: Story = {
+    tags: interactiveTags,
+    globals: bubbleGlobals,
+    ...shapeDescriptionParameters(
+        "Room",
+        "Layout variant: an ongoing call tile in the left-aligned bubble column. The tile provides its own padding, which the bubble shell must not override.",
+    ),
+    args: {
+        shape: "Room",
+        roomMessages: "bob",
+        showSenderAndAvatar: false,
+        state: { leftAlignedBubble: true, hasReply: false },
+        // The application suppresses the timestamp for RTC notification tiles
+        // (getShouldShowTimestamp checks isRtcNotification), so the story must
+        // not render one either.
+        hideTimestamp: true,
+        slots: { body: <StoryOngoingCallBody /> },
     },
 };
 
@@ -459,6 +481,14 @@ export const LeftAlignedBubbleVisual: Story = {
     globals: bubbleGlobals,
     parameters: LeftAlignedBubble.parameters,
     args: LeftAlignedBubble.args,
+};
+
+export const LeftAlignedBubbleCallTileVisual: Story = {
+    name: "Left-aligned bubble call tile - Bubble - Default",
+    tags: visualTags,
+    globals: bubbleGlobals,
+    parameters: LeftAlignedBubbleCallTile.parameters,
+    args: LeftAlignedBubbleCallTile.args,
 };
 
 export const AlignedBetweenBubblesVisual: Story = {

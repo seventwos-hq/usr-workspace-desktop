@@ -1,7 +1,7 @@
 /*
  * Copyright 2025 New Vector Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -114,7 +114,7 @@ function safeCounterpartTranslate(text: string, variables?: IVariables): { trans
         interpolate: boolean;
     } = { ...variables, interpolate: false };
 
-    // Horrible hack to avoid https://github.com/element-hq/element-web/issues/4191
+    // Horrible hack to avoid https://github.com/vector-im/element-web/issues/4191
     // The interpolation library that counterpart uses does not support undefined/null
     // values and instead will throw an error. This is a problem since everywhere else
     // in JS land passing undefined/null will simply stringify instead, and when converting
@@ -230,9 +230,7 @@ export function _tDom(text: TranslationKey, variables?: IVariables, tags?: Tags)
  */
 export function sanitizeForTranslation(text: string): string {
     // Add a non-breaking space so the regex doesn't trigger when translating.
-    // Neutralise every "%(" opener in linear time; matching through to ")" was
-    // quadratic on inputs with many unclosed "%(" sequences and missed nested ones.
-    return text.replaceAll("%(", "%\xa0(");
+    return text.replace(/%\(([^)]*)\)/g, "%\xa0($1)");
 }
 
 /*

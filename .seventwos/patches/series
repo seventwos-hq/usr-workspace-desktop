@@ -7,3 +7,4 @@
 0003-seventwos-service-defaults.patch  Default configuration uses only Seventwos services
 0004-remove-unreachable-links.patch  Remove links that no longer resolve and the default video-call domain
 0005-harden-translation-text.patch  Harden translation text handling
+0006-carry-call-default-and-help-link-fixes.patch  No default video-call domain or third-party integration manager; Seventwos names and help link in the remaining config and toast

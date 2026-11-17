@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""Verify that apps/web is an unmodified copy of the pinned upstream release.
+"""Verify that apps/web and packages are an unmodified copy of the pinned upstream release.
 
 The pin (tag, download URL, SHA-256) is read from the BASE branch, so a pull
 request cannot change what it is checked against. The upstream tarball is
 downloaded by tag and must match the pinned SHA-256.
 
 Rules for a pull request (base..head):
-  * No change to apps/web or under apps/web/ and no pinnedTag change: not an import, pass.
+  * No change to apps/web, packages, patches (or under them), package.json,
+    or oxlint.config.ts and no pinnedTag change: not an import, pass.
   * Otherwise every changed path must be in the import allowlist, every file
-    under apps/web/ must be byte-identical (content, executable bit, symlink
-    target) to apps/web/ in the pinned tarball, and
+    under apps/web/, packages/, and patches/, plus package.json and oxlint.config.ts,
+    must match (content, executable bit, symlink target) the pinned tarball,
+    except for the exact local license header in oxlint.config.ts, and
     .seventwos/upstream-state.json must carry "pinnedTag" equal to the pin.
 Exit 0 = pass, 1 = verification failed, 2 = setup error (fail closed).
 """
@@ -28,9 +30,19 @@ from pathlib import PurePosixPath
 PIN_PATH = ".seventwos/upstream-pin.json"
 STATE_PATH = ".seventwos/upstream-state.json"
 LEDGER_PATH = ".seventwos/upstream-ledger.jsonl"
-WEB_PREFIX = "apps/web/"
+# Paths that may change only by a byte-identical import of the pinned upstream release.
+IMPORT_PREFIXES = ("apps/web/", "packages/")
 # The workspace lockfile and catalog must change with the imported app.
-ALLOWED_FILES = {STATE_PATH, LEDGER_PATH, "pnpm-lock.yaml", "pnpm-workspace.yaml"}
+# The root manifest and the dependency patches also follow the imported release.
+IMPORT_FILES = ("package.json", "oxlint.config.ts")
+# The root lint config follows the imported release but keeps our license header.
+LOCAL_LINT_HEADER = (
+    b"/*\nCopyright 2026 Element Creations Ltd.\n\n"
+    b"SPDX-License-Identifier: AGPL-3.0-only\n"
+    b"Please see LICENSE in the repository root for full details.\n*/\n\n"
+)
+ALLOWED_FILES = {STATE_PATH, LEDGER_PATH, "pnpm-lock.yaml", "pnpm-workspace.yaml", *IMPORT_FILES}
+ALLOWED_PREFIXES = ("patches/",)
 MAX_TARBALL_BYTES = 200 * 1024 * 1024
 
 
@@ -66,11 +78,15 @@ def changed_paths(base: str, head: str) -> list[str]:
 
 
 def is_import(paths: list[str], base: str, head: str) -> bool:
-    if any(p == WEB_PREFIX.rstrip("/") or p.startswith(WEB_PREFIX) for p in paths):
+    if any(p in IMPORT_FILES or under_import_prefix(p) for p in paths):
         return True
     if STATE_PATH in paths:
         return pinned_tag_at(base) != pinned_tag_at(head)
     return False
+
+
+def under_import_prefix(path: str) -> bool:
+    return any(path == pre.rstrip("/") or path.startswith(pre) for pre in IMPORT_PREFIXES + ALLOWED_PREFIXES)
 
 
 def pinned_tag_at(ref: str):
@@ -81,7 +97,7 @@ def pinned_tag_at(ref: str):
 
 
 def check_allowlist(paths: list[str]) -> list[str]:
-    return [p for p in paths if not (p.startswith(WEB_PREFIX) or p in ALLOWED_FILES)]
+    return [p for p in paths if not (p.startswith(IMPORT_PREFIXES + ALLOWED_PREFIXES) or p in ALLOWED_FILES)]
 
 
 def download(url: str) -> bytes:
@@ -104,7 +120,7 @@ def tarball_tree(data: bytes, sha256: str) -> dict[str, tuple[str, bytes]]:
             if len(parts) < 2:
                 continue
             rel = "/".join(parts[1:])
-            if not rel.startswith(WEB_PREFIX):
+            if not (rel.startswith(IMPORT_PREFIXES + ALLOWED_PREFIXES) or rel in IMPORT_FILES):
                 continue
             if member.isdir():
                 continue
@@ -118,18 +134,22 @@ def tarball_tree(data: bytes, sha256: str) -> dict[str, tuple[str, bytes]]:
             else:
                 raise VerifyError(f"unsupported entry type in tarball: {rel}")
     if not tree:
-        raise VerifyError("tarball has no apps/web/ files")
+        raise VerifyError("tarball has no files under " + ", ".join(IMPORT_PREFIXES))
+    for pre in IMPORT_PREFIXES:
+        if not any(k.startswith(pre) for k in tree):
+            raise VerifyError(f"tarball has no {pre} files")
     return tree
 
 
 def git_tree(head: str) -> dict[str, tuple[str, bytes]]:
-    out = git("ls-tree", "-r", "-z", "--full-tree", head, "--", WEB_PREFIX.rstrip("/"))
+    out = git("ls-tree", "-r", "-z", "--full-tree", head, "--",
+              *[p.rstrip("/") for p in IMPORT_PREFIXES + ALLOWED_PREFIXES], *IMPORT_FILES)
     tree: dict[str, tuple[str, bytes]] = {}
     for entry in filter(None, out.split("\0")):
         meta, path = entry.split("\t", 1)
         mode, kind, obj = meta.split()
         if kind != "blob":
-            raise VerifyError(f"unsupported entry in apps/web: {path} ({kind})")
+            raise VerifyError(f"unsupported entry in imported path: {path} ({kind})")
         tree[path] = (mode, git("cat-file", "blob", obj, binary=True))
     return tree
 
@@ -144,6 +164,12 @@ def compare(expected: dict, actual: dict) -> list[str]:
         if expected[path][0] != actual[path][0]:
             problems.append(f"mode differs: {path} ({actual[path][0]} != {expected[path][0]})")
         elif expected[path][1] != actual[path][1]:
+            if (path == "oxlint.config.ts" and expected[path][0] in ("100644", "100755")
+                    and expected[path][1].startswith(b"/*\n")
+                    and actual[path][1].startswith(LOCAL_LINT_HEADER)):
+                _, separator, body = expected[path][1].partition(b"*/\n\n")
+                if separator and actual[path][1][len(LOCAL_LINT_HEADER):] == body:
+                    continue
             problems.append(f"content differs: {path}")
     return problems
 
@@ -161,8 +187,8 @@ def verify(base: str, head: str, fetch=download) -> str:
     problems = compare(tarball_tree(fetch(pin["url"]), pin["sha256"]), git_tree(head))
     if problems:
         shown = "\n  ".join(problems[:50])
-        raise VerifyError(f"apps/web differs from {pin['repository']} {pin['tag']} ({len(problems)} problems):\n  {shown}")
-    return f"pass: apps/web is byte-identical to {pin['repository']} {pin['tag']}"
+        raise VerifyError(f"imported paths differ from {pin['repository']} {pin['tag']} ({len(problems)} problems):\n  {shown}")
+    return f"pass: apps/web, packages, patches, package.json, and oxlint.config.ts are byte-identical to {pin['repository']} {pin['tag']} (except the local lint license header)"
 
 
 def main(argv=None) -> int:

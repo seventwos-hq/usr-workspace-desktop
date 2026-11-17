@@ -25,7 +25,7 @@ MANDATORY_EVIDENCE = (
 MANDATORY_MAPPINGS = (
     ("apps/web/**", "apps/web/**", "upstream-import-only"),
     ("apps/desktop/**", "apps/desktop/**", "selective-review"),
-    ("packages/**", "packages/**", "selective-review"),
+    ("packages/**", "packages/**", "upstream-import-only"),
     ("modules/**", "modules/**", "protected-divergence"),
     (".github/workflows/**", ".github/workflows/**", "protected-divergence"),
     ("none", "apps/desktop/seventwos.org/**", "protected-divergence"),
@@ -74,9 +74,32 @@ def require(condition: bool, message: str) -> None:
         raise ValidationError(message)
 
 
-def validate_policy_files() -> tuple[dict, dict, dict]:
+def validate_web_import() -> None:
+    """apps/web is absent, or a real directory pinned to an upstream release.
+
+    Its bytes are enforced by upstream-verify against the pinned tarball; here we
+    only fail closed unless the pin and the recorded pinnedTag agree.
+    """
     web = ROOT / "apps/web"
-    require(not web.exists() and not web.is_symlink(), "apps/web must remain absent until upstream-verify enforces byte-identical imports")
+    if not web.exists() and not web.is_symlink():
+        return
+    require(web.is_dir() and not web.is_symlink(), "apps/web must be a real directory imported from upstream")
+    pin_path = POLICY_DIR / "upstream-pin.json"
+    require(pin_path.is_file(), "apps/web requires an upstream pin (.seventwos/upstream-pin.json)")
+    pin = load_json(pin_path)
+    tag = pin.get("tag")
+    repository = pin.get("repository")
+    require(isinstance(tag, str) and tag != "" and repository == UPSTREAM_REPOSITORY, "upstream pin must name a tag of the pinned Element Web repository")
+    require(
+        pin.get("url") == f"{UPSTREAM_URL}/archive/refs/tags/{tag}.tar.gz" and HEX_64.match(str(pin.get("sha256", ""))) is not None,
+        "upstream pin must carry the tag archive URL and a SHA-256",
+    )
+    state = load_json(POLICY_DIR / "upstream-state.json")
+    require(state.get("pinnedTag") == tag, "apps/web requires upstream-state pinnedTag to equal the pinned tag")
+
+
+def validate_policy_files() -> tuple[dict, dict, dict]:
+    validate_web_import()
 
     for path in REQUIRED_FILES.values():
         require(path.is_file(), f"missing required policy file: {path.relative_to(ROOT)}")

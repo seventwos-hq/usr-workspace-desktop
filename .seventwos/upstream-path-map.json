@@ -16,8 +16,8 @@
     {
       "upstream": "packages/**",
       "local": "packages/**",
-      "mode": "selective-review",
-      "reason": "Only dependencies required by accepted desktop-shell changes may be considered."
+      "mode": "upstream-import-only",
+      "reason": "Shared packages may change only by a byte-identical import of the pinned upstream release, verified by upstream-verify."
     },
     {
       "upstream": "modules/**",

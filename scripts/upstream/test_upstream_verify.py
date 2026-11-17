@@ -15,7 +15,16 @@ assert SPEC and SPEC.loader
 UV = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(UV)
 
-WEB = {"apps/web/package.json": b'{"version": "1.0.0"}\n', "apps/web/src/a.ts": b"export const a = 1;\n"}
+WEB = {"apps/web/package.json": b'{"version": "1.0.0"}\n', "apps/web/src/a.ts": b"export const a = 1;\n",
+       "packages/shared-utils/src/b.ts": b"export const b = 1;\n"}
+SUPPORT = {"package.json": b'{"scripts": {"postinstall": "node scripts/pnpm-link.ts"}}\n',
+           "patches/dependency.patch": b"trusted patch\n",
+           "oxlint.config.ts": (
+               b"/*\nCopyright 2025 Element Creations Ltd.\n\n"
+               b"SPDX-License-Identifier: AGPL-3.0-only\n"
+               b"Please see LICENSE in the repository root for full details.\n*/\n\n"
+               b'export default { rules: { "no-eval": "error" } };\n'
+           )}
 
 
 def make_tarball(files: dict) -> bytes:
@@ -34,7 +43,7 @@ class UpstreamVerifyTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.cwd = os.getcwd()
         os.chdir(self.tmp.name)
-        self.tarball = make_tarball({**WEB, "apps/desktop/x.txt": b"ignored\n"})
+        self.tarball = make_tarball({**WEB, **SUPPORT, "apps/desktop/x.txt": b"ignored\n"})
         self.fetch = lambda url: self.tarball
         self.git("init", "-q", "-b", "main")
         self.git("config", "user.email", "test@example.invalid")
@@ -68,7 +77,7 @@ class UpstreamVerifyTests(unittest.TestCase):
         self.git("commit", "-q", "-m", msg)
 
     def import_web(self, files=WEB, tag="v1.0.0"):
-        for rel, data in files.items():
+        for rel, data in {**SUPPORT, **files}.items():
             self.write(rel, data)
         self.write(".seventwos/upstream-state.json", json.dumps({"pinnedTag": tag}).encode())
         self.write(".seventwos/upstream-ledger.jsonl", b'{"tag": "%s"}\n' % tag.encode())
@@ -85,6 +94,113 @@ class UpstreamVerifyTests(unittest.TestCase):
     def test_exact_import_passes(self):
         self.import_web()
         self.assertIn("byte-identical", self.verify())
+
+    def accept_import(self):
+        self.import_web()
+        self.assertIn("byte-identical", self.verify())
+        self.git("branch", "-f", "main", "HEAD")
+
+    def test_support_only_content_changes_after_import_fail(self):
+        self.accept_import()
+        for path in SUPPORT:
+            with self.subTest(path=path):
+                self.write(path, b"malicious\n")
+                self.commit("modify support file")
+                with self.assertRaisesRegex(UV.VerifyError, f"content differs: {path}"):
+                    self.verify()
+                self.git("reset", "--hard", "main")
+
+    def test_support_only_deletions_after_import_fail(self):
+        self.accept_import()
+        for path in SUPPORT:
+            with self.subTest(path=path):
+                Path(path).unlink()
+                self.commit("delete support file")
+                with self.assertRaisesRegex(UV.VerifyError, f"missing: {path}"):
+                    self.verify()
+                self.git("reset", "--hard", "main")
+
+    def test_support_only_mode_changes_after_import_fail(self):
+        self.accept_import()
+        for path in SUPPORT:
+            with self.subTest(path=path):
+                os.chmod(path, 0o755)
+                self.commit("chmod support file")
+                with self.assertRaisesRegex(UV.VerifyError, f"mode differs: {path}"):
+                    self.verify()
+                self.git("reset", "--hard", "main")
+
+    def test_support_only_symlinks_after_import_fail(self):
+        self.accept_import()
+        for path in SUPPORT:
+            with self.subTest(path=path):
+                Path(path).unlink()
+                os.symlink("README.md", path)
+                self.commit("support symlink")
+                with self.assertRaisesRegex(UV.VerifyError, f"mode differs: {path}"):
+                    self.verify()
+                self.git("reset", "--hard", "main")
+
+    def test_extra_patch_after_import_fails(self):
+        self.accept_import()
+        self.write("patches/extra.patch", b"unverified patch\n")
+        self.commit("extra patch")
+        with self.assertRaisesRegex(UV.VerifyError, "extra: patches/extra.patch"):
+            self.verify()
+
+    def test_patch_root_file_after_import_fails(self):
+        self.accept_import()
+        Path("patches/dependency.patch").unlink()
+        Path("patches").rmdir()
+        self.write("patches", b"unverified\n")
+        self.commit("replace patch directory")
+        with self.assertRaisesRegex(UV.VerifyError, "outside the allowlist: patches"):
+            self.verify()
+
+    def test_modified_root_postinstall_fails(self):
+        self.import_web({**WEB, "package.json": b'{"scripts": {"postinstall": "malicious"}}\n'})
+        with self.assertRaisesRegex(UV.VerifyError, "content differs: package.json"):
+            self.verify()
+
+    def test_modified_patch_fails(self):
+        self.import_web({**WEB, "patches/dependency.patch": b"malicious patch\n"})
+        with self.assertRaisesRegex(UV.VerifyError, "content differs: patches/dependency.patch"):
+            self.verify()
+
+    def test_missing_support_files_fail(self):
+        for path in SUPPORT:
+            with self.subTest(path=path):
+                self.import_web()
+                Path(path).unlink()
+                self.commit("delete support file")
+                with self.assertRaisesRegex(UV.VerifyError, f"missing: {path}"):
+                    self.verify()
+
+    def test_extra_patch_fails(self):
+        self.import_web({**WEB, "patches/extra.patch": b"unverified patch\n"})
+        with self.assertRaisesRegex(UV.VerifyError, "extra: patches/extra.patch"):
+            self.verify()
+
+    def test_support_mode_changes_fail(self):
+        for path in SUPPORT:
+            with self.subTest(path=path):
+                self.import_web()
+                os.chmod(path, 0o755)
+                self.commit("chmod support file")
+                with self.assertRaisesRegex(UV.VerifyError, f"mode differs: {path}"):
+                    self.verify()
+                os.chmod(path, 0o644)
+
+    def test_support_symlinks_fail(self):
+        for path in SUPPORT:
+            with self.subTest(path=path):
+                self.import_web()
+                Path(path).unlink()
+                os.symlink("README.md", path)
+                self.commit("support symlink")
+                with self.assertRaisesRegex(UV.VerifyError, f"mode differs: {path}"):
+                    self.verify()
+                Path(path).unlink()
 
     def test_web_root_regular_file_fails(self):
         self.write("apps/web", b"unverified\n")
@@ -119,6 +235,18 @@ class UpstreamVerifyTests(unittest.TestCase):
         with self.assertRaisesRegex(UV.VerifyError, "missing: apps/web/src/a.ts"):
             self.verify()
 
+    def test_modified_package_file_fails(self):
+        self.import_web({**WEB, "packages/shared-utils/src/b.ts": b"export const b = 2;\n"})
+        with self.assertRaisesRegex(UV.VerifyError, "content differs: packages/shared-utils/src/b.ts"):
+            self.verify()
+
+    def test_package_only_change_is_checked(self):
+        self.import_web()
+        self.write("packages/shared-utils/src/c.ts", b"x\n")
+        self.commit("extra package file")
+        with self.assertRaisesRegex(UV.VerifyError, "extra: packages/shared-utils/src/c.ts"):
+            self.verify()
+
     def test_mode_change_fails(self):
         self.import_web()
         os.chmod("apps/web/src/a.ts", 0o755)
@@ -131,6 +259,40 @@ class UpstreamVerifyTests(unittest.TestCase):
         self.import_web()
         with self.assertRaisesRegex(UV.VerifyError, "outside the allowlist: apps/desktop/main.ts"):
             self.verify()
+
+    def test_lint_config_change_with_import_passes(self):
+        _, _, body = SUPPORT["oxlint.config.ts"].partition(b"*/\n\n")
+        self.import_web({**WEB, "oxlint.config.ts": UV.LOCAL_LINT_HEADER + body})
+        self.assertIn("byte-identical", self.verify())
+
+    def test_modified_lint_config_with_import_fails(self):
+        self.import_web({**WEB, "oxlint.config.ts": b"export default {};\n"})
+        with self.assertRaisesRegex(UV.VerifyError, "content differs: oxlint.config.ts"):
+            self.verify()
+
+    def test_local_lint_header_only_change_after_import_passes(self):
+        self.accept_import()
+        _, _, body = SUPPORT["oxlint.config.ts"].partition(b"*/\n\n")
+        self.write("oxlint.config.ts", UV.LOCAL_LINT_HEADER + body)
+        self.commit("local lint header")
+        self.assertIn("byte-identical", self.verify())
+
+    def test_lint_header_exception_rejects_injected_code_and_rule_changes(self):
+        self.accept_import()
+        _, _, body = SUPPORT["oxlint.config.ts"].partition(b"*/\n\n")
+        contents = (
+            UV.LOCAL_LINT_HEADER + b'import "malicious";\n' + body,
+            UV.LOCAL_LINT_HEADER + b"export default {};\n",
+            UV.LOCAL_LINT_HEADER.replace(b"Copyright", b"*/ import 'malicious'; /* Copyright") + body,
+            UV.LOCAL_LINT_HEADER + UV.LOCAL_LINT_HEADER + body,
+        )
+        for content in contents:
+            with self.subTest(content=content):
+                self.write("oxlint.config.ts", content)
+                self.commit("tamper lint config")
+                with self.assertRaisesRegex(UV.VerifyError, "content differs: oxlint.config.ts"):
+                    self.verify()
+                self.git("reset", "--hard", "main")
 
     def test_pin_change_in_pr_is_outside_allowlist(self):
         self.write(".seventwos/upstream-pin.json", b"{}")

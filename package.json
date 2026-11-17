@@ -28,7 +28,7 @@
         "docs:dev": "vitepress dev docs",
         "docs:build": "vitepress build docs",
         "docs:preview": "vitepress preview docs",
-        "test:unit": "nx run @element-hq/element-web-module-api:build && vitest run",
+        "test:unit": "nx run-many -t test:unit:prepare -p && vitest run",
         "coverage:diff": "diff-cover --config-file diff-cover.toml apps/desktop/coverage/lcov.info packages/shared-components/coverage/lcov.info coverage/lcov.info"
     },
     "devDependencies": {
@@ -39,18 +39,21 @@
         "@types/node": "25",
         "@typescript/native": "catalog:",
         "@vitest/coverage-v8": "catalog:",
+        "@vitest/ui": "catalog:",
         "cronstrue": "^3.0.0",
         "eslint-plugin-element-call": "github:element-hq/element-call#main&path:/eslint",
+        "eslint-plugin-element-web": "workspace:*",
+        "eslint-plugin-react-web-api": "^5.24.2",
         "eslint-plugin-storybook": "^10.4.6",
         "husky": "^9.0.0",
-        "knip": "6.34.0",
+        "knip": "6.38.0",
         "lint-staged": "^17.0.0",
         "lodash": "^4.17.21",
-        "mermaid": "^11.13.0",
+        "mermaid": "^12.0.0",
         "minimist": "^1.2.6",
         "nx": "catalog:",
-        "oxfmt": "0.67.0",
-        "oxlint": "1.82.0",
+        "oxfmt": "0.73.0",
+        "oxlint": "catalog:",
         "oxlint-tsgolint": "^7.0.0",
         "typescript": "catalog:ts6",
         "vitepress": "^1.6.4",
@@ -64,7 +67,7 @@
     "devEngines": {
         "packageManager": {
             "name": "pnpm",
-            "version": "11.23.0",
+            "version": "12.14.0",
             "onFail": "download"
         }
     },

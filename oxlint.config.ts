@@ -68,6 +68,8 @@ export default defineConfig({
         "**/dist",
         "**/node_modules",
         "**/coverage",
+        // Imported upstream web app: verified identical to the pinned release, linted upstream
+        "apps/web/**",
         "apps/web/src/vector/modernizr.cjs",
         // Legacy skinning file that some people might still have
         "apps/web/src/component-index.js",

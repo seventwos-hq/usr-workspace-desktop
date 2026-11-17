@@ -2,17 +2,14 @@
     "name": "@element-hq/element-web-shared-utils",
     "type": "module",
     "version": "0.1.0",
-    "private": true,
-    "description": "Shared utilities used internally to build Seventwos Workspace for Desktop (inherited from Element Web).",
+    "description": "Shared utilities for Element Web",
     "repository": {
         "type": "git",
-        "url": "https://github.com/seventwos-hq/usr-workspace-desktop",
+        "url": "git+https://github.com/element-hq/element-web.git",
         "directory": "packages/shared-utils"
     },
-    "author": {
-        "name": "Seventwos"
-    },
-    "license": "AGPL-3.0-only",
+    "author": "element-hq",
+    "license": "SEE LICENSE IN README.md",
     "engines": {
         "node": ">=20.0.0"
     },
@@ -40,12 +37,13 @@
         "@types/sanitize-html": "2.16.1",
         "@types/node": "catalog:ts6",
         "@typescript/native": "catalog:",
+        "happy-dom": "^21.0.0",
         "typescript": "catalog:ts6",
         "unplugin-dts": "catalog:",
         "vite": "catalog:",
         "vitest": "catalog:"
     },
     "dependencies": {
-        "sanitize-html": "2.18.0"
+        "sanitize-html": "2.18.1"
     }
 }

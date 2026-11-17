@@ -1,7 +1,7 @@
 /*
  * Copyright 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -103,7 +103,7 @@ describe("DateSeparatorContextMenuView", () => {
         const onOpenChange = vi.fn<(open: boolean) => void>();
         const { vm } = renderMenu({ open: true, jumpToEnabled: true, onOpenChange });
 
-        const dateInput = screen.getByLabelText("Pick a date to jump to");
+        const dateInput = screen.getByLabelText("Pick a date to scroll to");
         fireEvent.input(dateInput, { target: { value: "2025-01-10" } });
         await user.click(screen.getByRole("button", { name: "Go" }));
 
@@ -115,7 +115,7 @@ describe("DateSeparatorContextMenuView", () => {
         const user = userEvent.setup();
         renderMenu({ open: true, jumpToEnabled: true });
 
-        const dateInput = screen.getByLabelText("Pick a date to jump to");
+        const dateInput = screen.getByLabelText("Pick a date to scroll to");
         const submitButton = screen.getByRole("button", { name: "Go" });
         dateInput.focus();
         await user.keyboard("{Tab}");
@@ -127,7 +127,7 @@ describe("DateSeparatorContextMenuView", () => {
         const user = userEvent.setup();
         renderMenu({ open: true, jumpToEnabled: true });
 
-        const dateInput = screen.getByLabelText("Pick a date to jump to");
+        const dateInput = screen.getByLabelText("Pick a date to scroll to");
         const submitButton = screen.getByRole("button", { name: "Go" });
         submitButton.focus();
         await user.keyboard("{Shift>}{Tab}{/Shift}");
@@ -153,7 +153,7 @@ describe("DateSeparatorContextMenuView", () => {
         const onOpenChange = vi.fn<(open: boolean) => void>();
         const { vm } = renderMenu({ open: true, jumpToEnabled: true, onOpenChange });
 
-        const dateInput = screen.getByLabelText("Pick a date to jump to");
+        const dateInput = screen.getByLabelText("Pick a date to scroll to");
         fireEvent.input(dateInput, { target: { value: "2025-01-11" } });
 
         const submitButton = screen.getByRole("button", { name: "Go" });
@@ -169,7 +169,7 @@ describe("DateSeparatorContextMenuView", () => {
         const onOpenChange = vi.fn<(open: boolean) => void>();
         const { vm } = renderMenu({ open: true, jumpToEnabled: true, onOpenChange });
 
-        const dateInput = screen.getByLabelText("Pick a date to jump to");
+        const dateInput = screen.getByLabelText("Pick a date to scroll to");
         fireEvent.input(dateInput, { target: { value: "2025-01-12" } });
 
         const submitButton = screen.getByRole("button", { name: "Go" });

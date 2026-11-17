@@ -1,7 +1,7 @@
 /*
  * Copyright 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -24,7 +24,9 @@ const { Default, WithImage } = composeStories(stories);
 function renderView(entries: MessageComposerUrlPreviewSnapshotEntry[], collapsed: boolean): ReturnType<typeof render> {
     const snapshot: MessageComposerUrlPreviewSnapshot = {
         content: entries.map((entry) => entry.matched_url).join(" "),
+        contentLinks: new Set(entries.map((entry) => entry.matched_url)),
         entries,
+        isModified: false,
     };
     const vm = new MockViewModel(snapshot);
     return render(
@@ -54,7 +56,9 @@ describe("MessageComposerUrlPreview", () => {
         // setting being false with the URL preview bundle feature enabled).
         const snapshot: MessageComposerUrlPreviewSnapshot = {
             content: "https://matrix.org",
+            contentLinks: new Set(["https://matrix.org"]),
             entries: Default.args.entries!,
+            isModified: false,
         };
         const vm = new MockViewModel(snapshot);
         const { container } = render(

@@ -1,7 +1,7 @@
 /*
 Copyright 2024-2025 New Vector Ltd.
 
-SPDX-License-Identifier: AGPL-3.0-only
+SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 Please see LICENSE files in the repository root for full details.
 */
 
@@ -225,6 +225,7 @@ export class MatrixAuthenticationServiceContainer extends GenericContainer {
  */
 export class StartedMatrixAuthenticationServiceContainer extends AbstractStartedContainer {
     private adminTokenPromise?: Promise<string>;
+    private adminRegistered = false;
 
     public constructor(
         container: StartedTestContainer,
@@ -241,14 +242,30 @@ export class StartedMatrixAuthenticationServiceContainer extends AbstractStarted
      */
     public async getAdminToken(): Promise<string> {
         if (this.adminTokenPromise === undefined) {
-            this.adminTokenPromise = this.registerUserInternal(
-                "admin",
-                "totalyinsecureadminpassword",
-                undefined,
-                true,
-            ).then((res) => res.accessToken);
+            if (this.adminRegistered) {
+                this.adminTokenPromise = this.manageIssueCompatibilityToken("admin", true).then(
+                    (res) => res.accessToken,
+                );
+            } else {
+                this.adminTokenPromise = this.registerUserInternal(
+                    "admin",
+                    "totalyinsecureadminpassword",
+                    undefined,
+                    true,
+                ).then((res) => {
+                    this.adminRegistered = true;
+                    return res.accessToken;
+                });
+            }
         }
         return this.adminTokenPromise;
+    }
+
+    /**
+     * Forget the cached admin token, so the next call to {@link getAdminToken} issues a new one.
+     */
+    public clearAdminToken(): void {
+        this.adminTokenPromise = undefined;
     }
 
     public async manage(cmd: string, ...args: string[]): Promise<ExecResult> {

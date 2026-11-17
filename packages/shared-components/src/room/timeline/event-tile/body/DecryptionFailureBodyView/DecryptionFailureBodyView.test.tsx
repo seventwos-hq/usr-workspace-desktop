@@ -1,7 +1,7 @@
 /*
  * Copyright 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -94,7 +94,9 @@ describe("DecryptionFailureBodyView", () => {
 
             // Then
             expect(container).toHaveTextContent(
-                verified ? "Unable to decrypt" : "You need to verify this device for access to historical messages",
+                verified
+                    ? "Unable to decrypt message"
+                    : "You need to verify this device for access to historical messages",
             );
         },
     );
@@ -130,7 +132,7 @@ describe("DecryptionFailureBodyView", () => {
             const { container } = customRender(DecryptionFailureReason.UNSIGNED_SENDER_DEVICE, verified);
 
             // Then
-            expect(container).toHaveTextContent("Sent from an insecure device");
+            expect(container).toHaveTextContent("Sent from an insecure device.");
             expect(container).toMatchSnapshot();
         },
     );

@@ -1,7 +1,7 @@
 /*
  * Copyright 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -63,10 +63,9 @@ describe("TextualBodyView", () => {
         expect(bodyRef.current?.textContent).toBe("Body content");
     });
 
-    it("invokes edited marker, body action, and emote sender handlers", async () => {
+    it("invokes edited marker and emote sender handlers", async () => {
         const user = userEvent.setup();
         const onEditedMarkerClick = vi.fn();
-        const onBodyActionClick = vi.fn();
         const onEmoteSenderClick = vi.fn();
 
         class TestTextualBodyViewModel
@@ -74,7 +73,6 @@ describe("TextualBodyView", () => {
             implements TextualBodyViewActions
         {
             public onEditedMarkerClick?: MouseEventHandler<HTMLButtonElement>;
-            public onBodyActionClick?: MouseEventHandler<HTMLButtonElement>;
             public onEmoteSenderClick?: MouseEventHandler<HTMLButtonElement>;
 
             public constructor(snapshot: TextualBodyViewSnapshot, actions: TextualBodyViewActions) {
@@ -86,8 +84,6 @@ describe("TextualBodyView", () => {
         const vm = new TestTextualBodyViewModel(
             {
                 kind: TextualBodyViewKind.EMOTE,
-                bodyWrapper: TextualBodyViewBodyWrapperKind.ACTION,
-                bodyActionAriaLabel: "Open starter link",
                 showEditedMarker: true,
                 editedMarkerText: "(edited)",
                 editedMarkerTooltip: "Edited yesterday at 11:48",
@@ -96,7 +92,6 @@ describe("TextualBodyView", () => {
             },
             {
                 onEditedMarkerClick,
-                onBodyActionClick,
                 onEmoteSenderClick,
             },
         ) as TextualBodyViewModel;
@@ -104,11 +99,9 @@ describe("TextualBodyView", () => {
         render(<TextualBodyView vm={vm} body={<span>waves</span>} />);
 
         await user.click(screen.getByRole("button", { name: "Alice" }));
-        await user.click(screen.getByRole("button", { name: "Open starter link" }));
         await user.click(screen.getByRole("button", { name: "(edited)" }));
 
         expect(onEmoteSenderClick).toHaveBeenCalledTimes(1);
-        expect(onBodyActionClick).toHaveBeenCalledTimes(1);
         expect(onEditedMarkerClick).toHaveBeenCalledTimes(1);
     });
 
@@ -150,43 +143,5 @@ describe("TextualBodyView", () => {
         await user.click(screen.getByRole("button", { name: "(edited)" }));
 
         expect(onEditedMarkerClick).toHaveBeenCalledTimes(1);
-    });
-
-    it("renders action wrappers as native buttons and activates them for Enter and Space key presses", async () => {
-        const user = userEvent.setup();
-        const onBodyActionClick = vi.fn();
-
-        class TestTextualBodyViewModel
-            extends MockViewModel<TextualBodyViewSnapshot>
-            implements TextualBodyViewActions
-        {
-            public onBodyActionClick?: MouseEventHandler<HTMLButtonElement>;
-
-            public constructor(snapshot: TextualBodyViewSnapshot, actions: TextualBodyViewActions) {
-                super(snapshot);
-                Object.assign(this, actions);
-            }
-        }
-
-        const vm = new TestTextualBodyViewModel(
-            {
-                kind: TextualBodyViewKind.TEXT,
-                bodyWrapper: TextualBodyViewBodyWrapperKind.ACTION,
-                bodyActionAriaLabel: "Open starter link",
-            },
-            { onBodyActionClick },
-        ) as TextualBodyViewModel;
-
-        render(<TextualBodyView vm={vm} body={<span>Launch the integration flow.</span>} />);
-
-        const action = screen.getByRole("button", { name: "Open starter link" });
-        expect(action).toHaveAttribute("type", "button");
-
-        action.focus();
-        await user.keyboard("{Escape}");
-        await user.keyboard("{Enter}");
-        await user.keyboard(" ");
-
-        expect(onBodyActionClick).toHaveBeenCalledTimes(2);
     });
 });

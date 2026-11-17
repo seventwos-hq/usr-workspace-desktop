@@ -1,7 +1,7 @@
 /*
  * Copyright 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -60,6 +60,6 @@ describe("MKeyVerificationRequestView", () => {
         render(<MKeyVerificationRequestView vm={vm} ref={ref} />);
 
         expect(ref.current).toBeInstanceOf(HTMLDivElement);
-        expect(ref.current).toHaveTextContent("Alice wants to verify");
+        expect(ref.current).toMatchTextContent(/Alice wants to verify/);
     });
 });

@@ -31,7 +31,9 @@ LEDGER_PATH = ".seventwos/upstream-ledger.jsonl"
 # Paths that may change only by a byte-identical import of the pinned upstream release.
 IMPORT_PREFIXES = ("apps/web/", "packages/")
 # The workspace lockfile and catalog must change with the imported app.
-ALLOWED_FILES = {STATE_PATH, LEDGER_PATH, "pnpm-lock.yaml", "pnpm-workspace.yaml"}
+# The root manifest and the dependency patches also follow the imported release.
+ALLOWED_FILES = {STATE_PATH, LEDGER_PATH, "pnpm-lock.yaml", "pnpm-workspace.yaml", "package.json"}
+ALLOWED_PREFIXES = ("patches/",)
 MAX_TARBALL_BYTES = 200 * 1024 * 1024
 
 
@@ -86,7 +88,7 @@ def pinned_tag_at(ref: str):
 
 
 def check_allowlist(paths: list[str]) -> list[str]:
-    return [p for p in paths if not (p.startswith(IMPORT_PREFIXES) or p in ALLOWED_FILES)]
+    return [p for p in paths if not (p.startswith(IMPORT_PREFIXES + ALLOWED_PREFIXES) or p in ALLOWED_FILES)]
 
 
 def download(url: str) -> bytes:

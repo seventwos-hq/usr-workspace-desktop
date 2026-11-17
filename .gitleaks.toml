@@ -14,7 +14,7 @@ id = "generic-api-key"
 [[rules.allowlists]]
 description = "Element crypto-store fixture: public Curve25519 keys"
 condition = "AND"
-paths = ['''^apps/web/playwright/e2e/crypto/test_indexeddb_cryptostore_dump/dump\.json$''']
+paths = ['''^apps/web/playwright/e2e/crypto/test_(legacy_)?indexeddb_cryptostore_dump/dump\.json$''']
 regexTarget = "match"
 regexes = ['''^(senderCurve25519Key|sender_key|deviceKey)"\s*:\s*"[A-Za-z0-9+/]{43}"$''']
 

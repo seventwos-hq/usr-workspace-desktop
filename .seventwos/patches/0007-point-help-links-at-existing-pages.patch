@@ -1,0 +1,50 @@
+diff --git a/apps/web/README.md b/apps/web/README.md
+index 9b516e3c89..7a949e9825 100644
+--- a/apps/web/README.md
++++ b/apps/web/README.md
+@@ -69,9 +69,7 @@ guide](https://pnpm.io/installation#using-corepack) if you do not have it alread
+ 1. Install the prerequisites: `pnpm install`.
+     - If you're using the `develop` branch, then it is recommended to set up a
+       proper development environment (see [Setting up a dev
+-      environment](../../developer_guide.md#setting-up-a-dev-environment) below). Alternatively, you
+-      can use <https://develop.seventwos.org> - the continuous integration release of
+-      the develop branch.
++      environment](../../developer_guide.md#setting-up-a-dev-environment) below).
+ 1. Configure the app by copying `config.sample.json` to `config.json` and
+    modifying it. See the [configuration docs](../../docs/config.md) for details.
+ 1. `pnpm dist` to build a tarball to deploy. Untaring this file will give
+diff --git a/apps/web/src/SdkConfig.ts b/apps/web/src/SdkConfig.ts
+index 86e8868a2f..ef43748726 100644
+--- a/apps/web/src/SdkConfig.ts
++++ b/apps/web/src/SdkConfig.ts
+@@ -19,13 +19,13 @@ import ElementDesktopLogoSvg from "../res/img/element-desktop-logo.svg";
+ export const DEFAULTS = {
+     brand: "Seventwos Workspace",
+     branding: {
+-        logo_link_url: "https://workspace.seventwos.org",
++        logo_link_url: "https://seventwos.com/",
+         auth_header_logo_url: "themes/element/img/logos/element-logo.svg",
+         welcome_background_url: "themes/element/img/backgrounds/lake.jpg",
+     },
+-    help_url: "https://workspace.seventwos.org/help",
+-    help_encryption_url: "https://workspace.seventwos.org/help#encryption",
+-    help_key_storage_url: "https://workspace.seventwos.org/help#encryption5",
++    help_url: "https://seventwos.com/contact",
++    help_encryption_url: "https://seventwos.com/contact",
++    help_key_storage_url: "https://seventwos.com/contact",
+     show_labs_settings: false,
+     force_verification: true,
+     enable_client_well_known_lookups: true,
+diff --git a/apps/web/src/toasts/SetupEncryptionToast.tsx b/apps/web/src/toasts/SetupEncryptionToast.tsx
+index c725eb4a6f..4017924c76 100644
+--- a/apps/web/src/toasts/SetupEncryptionToast.tsx
++++ b/apps/web/src/toasts/SetupEncryptionToast.tsx
+@@ -133,7 +133,7 @@ const getDescription = (state: DeviceStateForToast): string | React.ReactNode =>
+             return _t("encryption|verify_toast_description", undefined, {
+                 a: (sub) => (
+                     <Link
+-                        href="https://workspace.seventwos.org/help#encryption-device-verification"
++                        href="https://seventwos.com/contact"
+                         target="_blank"
+                         size="sm"
+                     >

@@ -15,7 +15,8 @@ assert SPEC and SPEC.loader
 UV = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(UV)
 
-WEB = {"apps/web/package.json": b'{"version": "1.0.0"}\n', "apps/web/src/a.ts": b"export const a = 1;\n"}
+WEB = {"apps/web/package.json": b'{"version": "1.0.0"}\n', "apps/web/src/a.ts": b"export const a = 1;\n",
+       "packages/shared-utils/src/b.ts": b"export const b = 1;\n"}
 
 
 def make_tarball(files: dict) -> bytes:
@@ -117,6 +118,18 @@ class UpstreamVerifyTests(unittest.TestCase):
         files["apps/web/extra.ts"] = b"x"
         self.import_web(files)
         with self.assertRaisesRegex(UV.VerifyError, "missing: apps/web/src/a.ts"):
+            self.verify()
+
+    def test_modified_package_file_fails(self):
+        self.import_web({**WEB, "packages/shared-utils/src/b.ts": b"export const b = 2;\n"})
+        with self.assertRaisesRegex(UV.VerifyError, "content differs: packages/shared-utils/src/b.ts"):
+            self.verify()
+
+    def test_package_only_change_is_checked(self):
+        self.import_web()
+        self.write("packages/shared-utils/src/c.ts", b"x\n")
+        self.commit("extra package file")
+        with self.assertRaisesRegex(UV.VerifyError, "extra: packages/shared-utils/src/c.ts"):
             self.verify()
 
     def test_mode_change_fails(self):

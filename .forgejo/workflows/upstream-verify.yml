@@ -1,5 +1,5 @@
 name: upstream-verify
-# Proves an upstream import under apps/web is byte-identical to the pinned release.
+# Proves an upstream import under apps/web and packages is byte-identical to the pinned release.
 # The script and the pin are read from the base branch, so a pull request cannot weaken its own check.
 on:
   pull_request:

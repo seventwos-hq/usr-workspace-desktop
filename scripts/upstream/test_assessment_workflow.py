@@ -17,8 +17,8 @@ class AssessmentWorkflowTests(unittest.TestCase):
         script = step.split("              run: |\n", 1)[1].split("\n            - name:", 1)[0]
         cls.base_script = textwrap.dedent(script).split("python3 scripts/upstream/validate_policy.py", 1)[0]
 
-    def test_required_check_runs_for_all_develop_pull_requests(self) -> None:
-        self.assertRegex(self.triggers, r"(?m)^    pull_request:\n        branches:\n            - develop$")
+    def test_required_check_runs_for_all_main_pull_requests(self) -> None:
+        self.assertRegex(self.triggers, r"(?m)^    pull_request:\n        branches:\n            - main$")
         self.assertNotRegex(self.triggers, r"(?m)^\s+(paths|paths-ignore):")
         self.assertNotRegex(self.workflow, r"(?m)^\s+if:")
         self.assertIn("name: Validate policy and report upstream tip", self.workflow)

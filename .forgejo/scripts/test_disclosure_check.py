@@ -1,4 +1,5 @@
 """Tests for disclosure_check whole-file (UTF-16/32) scanning. Run: python3 -m unittest discover -s .forgejo/scripts"""
+import codecs
 import os
 import re
 import subprocess
@@ -69,6 +70,31 @@ class WideContent(RepoCase):
         self.assertEqual([], self.scan(base))
 
 
+class BomContent(RepoCase):
+    def test_bom_prefixed_files_are_flagged(self):
+        text = "secretterm here\n"
+        cases = {
+            "utf-8-bom": codecs.BOM_UTF8 + text.encode("utf-8"),
+            "utf-16-le-bom": codecs.BOM_UTF16_LE + text.encode("utf-16-le"),
+            "utf-16-be-bom": codecs.BOM_UTF16_BE + text.encode("utf-16-be"),
+            "utf-32-le-bom": codecs.BOM_UTF32_LE + text.encode("utf-32-le"),
+            "utf-32-be-bom": codecs.BOM_UTF32_BE + text.encode("utf-32-be"),
+        }
+        base = self.commit({"a.txt": b"x\n"})
+        for name, data in cases.items():
+            with self.subTest(name):
+                self.commit({"w.txt": data})
+                self.assertTrue(any("denylist" in h for h in self.scan(base)))
+                self.git("reset", "-q", "--hard", base)
+
+    def test_clean_bom_files_are_not_flagged(self):
+        base = self.commit({"a.txt": b"x\n"})
+        self.commit({"u16.txt": codecs.BOM_UTF16_LE + "hello\n".encode("utf-16-le"),
+                     "u32.txt": codecs.BOM_UTF32_BE + "hello\n".encode("utf-32-be"),
+                     "u8.txt": codecs.BOM_UTF8 + b"hello\n"})
+        self.assertEqual([], self.scan(base))
+
+
 class NonUtf8Names(RepoCase):
     def test_non_utf8_filename_is_still_scanned(self):
         base = self.commit({"a.txt": b"x\n"})
@@ -86,6 +112,18 @@ class NonUtf8Names(RepoCase):
         self.commit({"a.txt": b"x\n"})
         with self.assertRaises(dc.InputError):
             dc.blob_at_head(b"does-not-exist")
+
+    def test_oversize_blob_fails_closed(self):
+        self.commit({"a.txt": b"x\n"})
+        self.commit({"secretname.bin": b"y" * 64})
+        old = dc.MAX_BLOB_BYTES
+        dc.MAX_BLOB_BYTES = 32
+        self.addCleanup(setattr, dc, "MAX_BLOB_BYTES", old)
+        with self.assertRaises(dc.InputError) as cm:
+            dc.blob_at_head(b"secretname.bin", 7)
+        msg = str(cm.exception)
+        self.assertIn("#7", msg)
+        self.assertNotIn("secretname", msg)
 
 
 if __name__ == "__main__":

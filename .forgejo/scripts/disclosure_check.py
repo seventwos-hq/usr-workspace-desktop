@@ -322,7 +322,10 @@ def changed_paths(base):
     return [x for x in out.split(b"\0") if x]
 
 
-def blob_at_head(path):
+MAX_BLOB_BYTES = 5 * 1024 * 1024
+
+
+def blob_at_head(path, num=0):
     """Blob bytes of a path (bytes) at HEAD; None for non-blobs such as submodules.
 
     A failed lookup is an input error, never a reason to skip the file.
@@ -333,6 +336,11 @@ def blob_at_head(path):
         raise InputError("cannot look up changed file at HEAD")
     if kind.stdout.strip() != b"blob":
         return None
+    size = subprocess.run(("git", "cat-file", "-s", spec), capture_output=True)
+    if size.returncode != 0 or not size.stdout.strip().isdigit():
+        raise InputError("cannot determine size of changed file #%d at HEAD" % num)
+    if int(size.stdout) > MAX_BLOB_BYTES:
+        raise InputError("changed file #%d exceeds the %d byte read limit" % (num, MAX_BLOB_BYTES))
     return subprocess.run(("git", "cat-file", "blob", spec),
                           check=True, capture_output=True).stdout
 
@@ -384,7 +392,7 @@ def scan_content(base, deny):
     for num, bpath in enumerate(changed_paths(base), 1):
         if bpath.startswith(b".forgejo/"):
             continue
-        raw = blob_at_head(bpath)
+        raw = blob_at_head(bpath, num)
         if raw is None or is_utf8_text(raw):
             continue
         for decoded in wide_decodings(raw):

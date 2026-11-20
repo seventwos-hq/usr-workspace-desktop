@@ -1,25 +1,6 @@
-# State
-Last updated: 2026-11-09 by Tobo
-
-Snapshot: GitHub PR35 at 6c2874943c3857b93b2f28350c3b33c84fee8a68. Recheck later heads and results live.
-
-## Current card: documentation integration correction
-
-## Done
-- Added AGENTS.md and .agent/state.md
-- Clarified independent review and Forgejo versus production release authority; supplied required fetch target/config arguments.
-- Forgejo PR2 and PR3 corrections were independently approved, normally merged, and forwarded to GitHub PR35; PR3 documents the separate Git hook installation step.
-
-## Next
-- Complete GitHub PR35 through exact-head required CI, native Copilot review and independently verified finding closure; then verify Pages and Forgejo content reconciliation.
-- Verify install/build/test commands once dependencies are installed.
-
-## Blocked
-- GitHub PR35 integration and subsequent Pages verification remain incomplete at this snapshot; the earlier CodeQL download failure is no longer an active blocker.
-
-## Notes
-- CI is GitHub Actions only; no Forgejo workflows.
-- Local commands in AGENTS.md remain unverified; no local build was run for this correction.
-- Web bundle is fetched from an exact upstream tag/URL; apps/web intentionally absent.
-- Historical CodeQL JavaScript/TypeScript download at e53ca2e9f247c22e4597e8b93715ed6641380831 failed with HTTP 504. CodeQL run 42503614607 succeeded for JavaScript/TypeScript, Python and Actions at the snapshot head above.
-- Required checks passed at the snapshot head: runs 42503614363, 42503614526 and 42503614583. These results do not validate any later correction commit.
+# State (20 Nov 06:05 UTC)
+Card 1910588255833687729. Patch-layer rework of old PR34 delta on v1.12.35.
+Done: 6 conflicts resolved in scratch merge (~/work/tmp/w/m, v1.12.28+delta->v1.12.35). Resolution: take upstream for SecurityManager.ts, CreateSecretStorageDialog.tsx (cryptoSetup extension code dropped: upstream removed ModuleRunner extension), package.json (upstream sentry/deps; module-api + crypto-wasm pins dropped), ProxiedModuleApi.ts deleted upstream (accepted); keep our values in config.sample.json; keep our href in SetupEncryptionToast.tsx on upstream Link.
+Result: .seventwos/patches/web-delta.patch (23 files, +56/-80), verified: git apply --check clean on pristine v1.12.35 tarball (sha256 5f153456...e945) in ~/work/tmp/v35.
+NOT done: lint/type-check/unit tests (apps/web not in this branch; needs pristine import, PR#40 blocked by ocr-gate size cap; pnpm install+build exceeds 2 GB local cap -> CI). No push, no PR.
+Next: 1) pristine v1.12.35 import commit; 2) build-time patch apply script + path-map/policy entry; 3) CI build + brand audit + attribution check; then push + PR "WIP: feat: rebuild desktop web layer on upstream 1.12.35".

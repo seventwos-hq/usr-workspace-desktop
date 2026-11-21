@@ -88,7 +88,7 @@ describe("loadConfig", () => {
         });
 
         const config = await loadConfig("/home/custom-config.json");
-        expect(config.help_url).toBe("https://workspace.seventwos.org");
+        expect(config.help_url).toBe("https://workspace.seventwos.com");
         expect(config.web_base_url).toBe("https://chat.org.com");
     });
 
@@ -102,8 +102,8 @@ describe("loadConfig", () => {
         );
 
         const config = await loadConfig(undefined);
-        expect(config.help_url).toBe("https://workspace.seventwos.org");
-        expect(config.web_base_url).toBe("https://workspace.seventwos.org");
+        expect(config.help_url).toBe("https://workspace.seventwos.com");
+        expect(config.web_base_url).toBe("https://workspace.seventwos.com");
         expect(config.enable_auto_update).toBeUndefined();
     });
 
@@ -133,7 +133,7 @@ describe("loadConfig", () => {
         );
 
         const config = await loadConfig("/home/custom-config.json");
-        expect(config.help_url).toBe("https://workspace.seventwos.org");
+        expect(config.help_url).toBe("https://workspace.seventwos.com");
         expect(config.web_base_url).toBe("https://chat.org.com");
         expect(config.modules).toStrictEqual(["/webapp/modules/banner", "module2"]);
     });

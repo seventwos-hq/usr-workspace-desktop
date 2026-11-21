@@ -29,7 +29,7 @@ export function getBuildConfig(): BuildConfig {
     if (!buildConfig) {
         const packageJson = loadJsonFile(path.join(__dirname, "..", "package.json")) as JsonObject;
         buildConfig = {
-            appId: (packageJson["electron_appId"] as string) || "org.seventwos.workspace.desktop",
+            appId: (packageJson["electron_appId"] as string) || "com.seventwos.workspace.desktop",
             protocol: (packageJson["electron_protocol"] as string) || "seventwos-workspace",
             windowsCertSubjectName: packageJson["electron_windows_cert_sn"] as string,
         };

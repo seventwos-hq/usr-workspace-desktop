@@ -1,5 +1,5 @@
 {
-    "appId": "org.seventwos.workspace.desktop.preview",
+    "appId": "com.seventwos.workspace.desktop.preview",
     "name": "seventwos-workspace-desktop-preview",
     "productName": "Seventwos Workspace Preview",
     "description": "Seventwos Workspace desktop preview client",

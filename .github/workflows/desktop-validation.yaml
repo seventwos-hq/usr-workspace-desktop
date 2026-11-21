@@ -61,10 +61,10 @@ jobs:
                   const files = [
                       "apps/desktop/package.json",
                       "apps/desktop/project.json",
-                      "apps/desktop/seventwos.org/release/build.json",
-                      "apps/desktop/seventwos.org/release/config.json",
-                      "apps/desktop/seventwos.org/preview/build.json",
-                      "apps/desktop/seventwos.org/preview/config.json",
+                      "apps/desktop/seventwos.com/release/build.json",
+                      "apps/desktop/seventwos.com/release/config.json",
+                      "apps/desktop/seventwos.com/preview/build.json",
+                      "apps/desktop/seventwos.com/preview/config.json",
                   ];
 
                   for (const file of files) {

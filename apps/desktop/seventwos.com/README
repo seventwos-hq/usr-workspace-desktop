@@ -1,6 +1,6 @@
 These are the Seventwos Workspace desktop build variants.
 
-Both variants record the planned workspace.seventwos.org update endpoint, but
+Both variants record the planned workspace.seventwos.com update endpoint, but
 automatic updates remain disabled until Seventwos operates and validates that
 service. Homeserver, identity server, telemetry, rageshake, maps, call, and
 Scalar integration endpoints are intentionally absent. Operators must add

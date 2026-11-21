@@ -60,7 +60,7 @@ export default withMermaid({
     themeConfig: {
         nav: [
             { text: "Home", link: "/" },
-            { text: "Website", link: "https://seventwos.org" },
+            { text: "Website", link: "https://seventwos.com" },
         ],
 
         search: {

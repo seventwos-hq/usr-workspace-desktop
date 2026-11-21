@@ -38,8 +38,8 @@ function loadLocalConfigFile(location: string | undefined): JsonDocument {
 
 const DEFAULTS = {
     brand: "Seventwos Workspace",
-    help_url: "https://workspace.seventwos.org",
-    web_base_url: "https://workspace.seventwos.org",
+    help_url: "https://workspace.seventwos.com",
+    web_base_url: "https://workspace.seventwos.com",
 } satisfies DesktopConfigJson;
 
 function applyDefaults(conf: SeventwosDesktopConfigJson): asserts conf is ConfigOptions {

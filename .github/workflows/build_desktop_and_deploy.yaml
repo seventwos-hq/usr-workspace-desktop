@@ -48,7 +48,7 @@ jobs:
         permissions:
             contents: read
         with:
-            config: seventwos.org/${{ inputs.variant }}
+            config: seventwos.com/${{ inputs.variant }}
             web-bundle-url: ${{ inputs.web_bundle_url }}
             web-bundle-sha256: ${{ inputs.web_bundle_sha256 }}
 

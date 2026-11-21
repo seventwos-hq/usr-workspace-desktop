@@ -11,8 +11,8 @@ is fetched and verified).
 What this repository _does_ control is which flags are forced on or off for the Seventwos Workspace
 builds, via the checked-in configs:
 
-- [`apps/desktop/seventwos.org/release/config.json`](../apps/desktop/seventwos.org/release/config.json)
-- [`apps/desktop/seventwos.org/preview/config.json`](../apps/desktop/seventwos.org/preview/config.json)
+- [`apps/desktop/seventwos.com/release/config.json`](../apps/desktop/seventwos.com/release/config.json)
+- [`apps/desktop/seventwos.com/preview/config.json`](../apps/desktop/seventwos.com/preview/config.json)
 
 For example, the release config currently forces the following off:
 

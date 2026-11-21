@@ -21,7 +21,7 @@ every build must opt in to an exact upstream release or provide a separately ver
 
 ```
 # Fetch and verify an exact signed upstream release, then apply the Seventwos release config.
-pnpm run fetch --cfgdir seventwos.org/release v1.12.27
+pnpm run fetch --cfgdir seventwos.com/release v1.12.27
 ```
 
 Importing the upstream release key is a separate, explicit operation:
@@ -95,7 +95,7 @@ pnpm run fetch --cfgdir myconfig
 
 The checked-in Seventwos variants intentionally provide no homeserver, identity server, telemetry, rageshake, maps,
 call, or Scalar endpoints. Add only operated Seventwos services in an explicit config. The planned update endpoint is
-`https://workspace.seventwos.org/desktop/update/`, but automatic updates remain disabled unless
+`https://workspace.seventwos.com/desktop/update/`, but automatic updates remain disabled unless
 `enable_auto_update` is deliberately set to `true` after that service is operational.
 
 # Release readiness workflow

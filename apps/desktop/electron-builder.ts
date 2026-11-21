@@ -67,7 +67,7 @@ type Writable<T> = NonNullable<
 >;
 
 // Load the default variant as a base configuration
-const DEFAULT_VARIANT = path.join("seventwos.org", "release", "build.json");
+const DEFAULT_VARIANT = path.join("seventwos.com", "release", "build.json");
 let variant: Variant = JSON.parse(fs.readFileSync(DEFAULT_VARIANT, "utf8"));
 
 /**

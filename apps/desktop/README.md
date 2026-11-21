@@ -21,7 +21,7 @@ every build must opt in to an exact upstream release or provide a separately ver
 
 ```
 # Fetch and verify an exact signed upstream release, then apply the Seventwos release config.
-pnpm run fetch --cfgdir seventwos.com/release v1.12.27
+pnpm run fetch --cfgdir seventwos.com/release v1.12.35
 ```
 
 Importing the upstream release key is a separate, explicit operation:

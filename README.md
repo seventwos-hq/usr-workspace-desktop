@@ -10,29 +10,34 @@ The project retains Element's desktop approach: a TypeScript and React applicati
 
 Element does not publish an Element X desktop client. The Element desktop application is maintained inside the Element Web monorepo and is built on the Matrix JS SDK, so this repository forks Element Web rather than Element X. The three workspaces therefore share product intent and a common Matrix protocol foundation, but not a single application codebase.
 
-## Repository layout
+## Repository layout and where we work
 
-This repository is a monorepo inherited from Element Web. Since Seventwos Workspace for Desktop is a
-standalone client, `apps/web` (the browser application) has been removed. The layout is:
+This repository is a monorepo inherited from Element Web and governed by `.seventwos/upstream-path-map.json` (enforced by `scripts/upstream/validate_policy.py` and `scripts/upstream/upstream_verify.py`). Paths are separated into three explicit tiers so Seventwos work layers cleanly on top of upstream without polluting imported code:
 
-- `apps/desktop` — the Electron desktop application, previously maintained as `element-desktop`.
-- `packages/` and `modules/` — shared libraries and optional modules used to build `apps/desktop`.
+### 1. Seventwos-owned layer (`protected-divergence` — where we work)
 
-The desktop app packages a pre-built web UI bundle at build time rather than compiling one locally in
-this repository — see `apps/desktop/scripts/fetch-package.ts`. The dependency is explicit rather than
-independent: local builds require an exact upstream release tag, and release-readiness CI requires an
-exact HTTPS bundle URL plus SHA-256 digest. The repository does not contain or restore `apps/web`.
-Replacing the inherited web bundle with a Seventwos-authored bundle remains future work.
+- `apps/desktop/seventwos.org/` — Seventwos brand identity, endpoints (`workspace.seventwos.org`), themes, feature flags, and build/runtime configuration (`preview/config.json`, `preview/build.json`, `release/config.json`, `release/build.json`).
+- `modules/` — Seventwos-authored UI and product modules (`banner`, `restricted-guests`, `widget-lifecycle`, `widget-toggles`) built on the Element Web Module API (`@element-hq/element-web-module-api`). **Default rule**: implement new Seventwos UI and product features in `modules/` or `apps/desktop/seventwos.org/` first.
+- `.seventwos/` — selective upstream synchronisation policy (`upstream-policy.json`), path map (`upstream-path-map.json`), invariants (`upstream-invariants.json`), pinned upstream release (`upstream-pin.json`), selection state (`upstream-state.json`), immutable evidence (`.seventwos/evidence/`), and append-only decision ledger (`upstream-ledger.jsonl`), plus any explicit web-layer patch series under `.seventwos/patches/` for changes that the Module API or `config.json` cannot express.
+- `.github/workflows/` and `scripts/upstream/` — repository-owned CI, policy validation, and release automation.
+
+### 2. Selective-review desktop shell (`selective-review`)
+
+- `apps/desktop/` (outside `apps/desktop/seventwos.org/`) — the Electron desktop application shell (formerly `element-desktop`). Keep Seventwos shell changes minimal and surgical so upstream Electron/desktop fixes can be reviewed and adopted individually.
+
+### 3. Read-only upstream imports (`upstream-import-only` — do not edit in place)
+
+- `packages/` (and `apps/web/` when present as a pinned source import) — must match a byte-identical import of the pinned upstream Element Web release tag recorded in `.seventwos/upstream-pin.json` (verified by `scripts/upstream/upstream_verify.py`). Never hand-edit files under `packages/` or `apps/web/`; layer Seventwos changes via `modules/`, `apps/desktop/seventwos.org/`, or `.seventwos/patches/`.
 
 ## Selective upstream synchronization
 
-This repository is a desktop shell plus a separately pinned Element Web bundle, not a source fork that follows
+This repository is a desktop shell plus a separately pinned Element Web release, not a source fork that follows
 upstream branch history. Repository-owned policy under [`.seventwos/`](https://github.com/seventwos-hq/usr-workspace-desktop/tree/main/.seventwos) defines the upstream path map,
 invariants, current selection state, immutable evidence, and append-only decision ledger.
 
 The upstream assessment workflow is read-only and report-only: it observes the `element-hq/element-web` `develop`
 tip and reports candidate state without applying changes, merging commits, or changing bundle selection. It runs
-for every pull request targeting `develop` and merge-queue check request, as well as weekly and manual assessments.
+for every pull request targeting `main` and merge-queue check request, as well as weekly and manual assessments.
 Pull requests and merge groups validate the append-only ledger against their event's base SHA. A bundle
 cannot be packaged until its exact release tag, HTTPS URL, SHA-256 digest, detached signature, provenance, rollback
 record, and required runtime evidence have passed human review. Required runtime evidence covers denied

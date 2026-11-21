@@ -7,28 +7,28 @@ Seventwos Workspace for Desktop: Electron desktop client for the Seventwos works
 TypeScript, React, Electron, Matrix JS SDK (Rust crypto via WASM). pnpm workspaces + Nx, Vitest, Playwright, oxlint/oxfmt, knip. Node per `.node-version` (24).
 
 ## Layout
-- `apps/desktop/seventwos.org/` - Seventwos brand, endpoint, theme, and release/preview config (`protected-divergence`)
+- `apps/desktop/seventwos.com/` - Seventwos brand, endpoint, theme, and release/preview config (`protected-divergence`)
 - `modules/` - Seventwos-owned UI/product modules (`banner`, `restricted-guests`, `widget-lifecycle`, `widget-toggles`; `protected-divergence`)
 - `.seventwos/` - upstream sync policy, ledger, path map, pin, and optional web patch series (`.seventwos/patches/`; `protected-divergence`)
-- `apps/desktop/` - Electron shell (`selective-review`; keep edits outside `seventwos.org/` minimal)
+- `apps/desktop/` - Electron shell (`selective-review`; keep edits outside `seventwos.com/` minimal)
 - `packages/` (and `apps/web/` when imported from the pinned tag) - `upstream-import-only` (verified byte-identical to `.seventwos/upstream-pin.json` by `scripts/upstream/upstream_verify.py`; never hand-edit)
 - `.github/workflows/` - CI (GitHub Actions only); `docs/`, `documentation/` - docs
 
 ## Adding the Seventwos layer on top of the fork (where we work)
 - **Three-tier path ownership (`.seventwos/upstream-path-map.json`)**:
   1. **Work here (`protected-divergence`)**:
-     - Put branding, homeserver/endpoint defaults (`workspace.seventwos.org`), themes, and feature flags in `apps/desktop/seventwos.org/{preview,release}/config.json` and `build.json`.
+     - Put branding, homeserver/endpoint defaults (`workspace.seventwos.com`), themes, and feature flags in `apps/desktop/seventwos.com/{preview,release}/config.json` and `build.json`.
      - Build new Seventwos UI and product features as modules in `modules/` using `@element-hq/element-web-module-api`.
      - If a web-layer change cannot be expressed via `config.json` or `modules/`, record it as an explicit patch under `.seventwos/patches/` rather than modifying `apps/web/` directly.
   2. **Review carefully (`selective-review`)**:
-     - `apps/desktop/` (outside `apps/desktop/seventwos.org/`): keep Electron shell changes surgical so upstream shell fixes remain easy to adopt.
+     - `apps/desktop/` (outside `apps/desktop/seventwos.com/`): keep Electron shell changes surgical so upstream shell fixes remain easy to adopt.
   3. **Never edit in place (`upstream-import-only`)**:
      - `packages/**` and `apps/web/**` are verified by `scripts/upstream/upstream_verify.py` against `.seventwos/upstream-pin.json`. Any direct edit outside a verified upstream release bump fails CI.
 
 ## Setup / Build / Test / Lint (from package.json / workflows)
 - Install: `pnpm install --frozen-lockfile` (unverified)
 - Enable Git hooks after installation: `pnpm install:git-hooks` (runs Husky; required on fresh clones; unverified)
-- Fetch web bundle: `pnpm --filter seventwos-workspace-desktop run fetch v1.12.35 --cfgdir seventwos.org/release` (run the package script, not pnpm's built-in fetch; example matching the current desktop package version; requires GPG and a trusted upstream signing key; unverified)
+- Fetch web bundle: `pnpm --filter seventwos-workspace-desktop run fetch v1.12.35 --cfgdir seventwos.com/release` (run the package script, not pnpm's built-in fetch; example matching the current desktop package version; requires GPG and a trusted upstream signing key; unverified)
 - Run: `pnpm --filter seventwos-workspace-desktop start` (unverified)
 - Build: `pnpm --filter seventwos-workspace-desktop build` (unverified)
 - Native: `pnpm --filter seventwos-workspace-desktop build:native` (unverified)

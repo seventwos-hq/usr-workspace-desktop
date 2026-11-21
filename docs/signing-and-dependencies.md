@@ -13,7 +13,7 @@ upstream-controlled sources. Nothing here changes behaviour.
 | CI | `.github/workflows/build_desktop_*.yaml` | None. `CSC_IDENTITY_AUTO_DISCOVERY: false`; jobs are labelled "unsigned". No `secrets.*` used. | Artifacts are unsigned by design (see `apps/desktop/README.md`). |
 
 Hardcoded Element signing identities: **none found** (no team ID, cert subject, thumbprint or publisher name in
-the builder config, build config, entitlements or workflows). `build.json` appId is `org.seventwos.workspace.desktop`.
+the builder config, build config, entitlements or workflows). `build.json` appId is `com.seventwos.workspace.desktop`.
 
 Residual notes:
 - `electron_windows_cert_sn` (the subject name) is embedded in package metadata and used by `src/tray.ts` to derive a
@@ -67,6 +67,6 @@ Nothing below exists in the repo, and no values are recorded here.
 - **macOS**: an Apple Developer Program account, a Developer ID Application certificate, the team ID, and notarization
   credentials (App Store Connect API key or Apple ID with app-specific password).
 - **Linux**: optionally, a GPG key if `.deb`/tarball or apt-repo signing is wanted.
-- **Update service**: hosting for `https://workspace.seventwos.org/desktop/update/` and the signing keys for it.
+- **Update service**: hosting for `https://workspace.seventwos.com/desktop/update/` and the signing keys for it.
 - **Bundle pinning**: the chosen upstream release tag plus the SHA-256 of the tarball to build.
 - **Secret storage**: a protected CI environment to hold the above, using `SEVENTWOS_WORKSPACE_*` names.

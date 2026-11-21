@@ -7,7 +7,7 @@ index c4b84a1..9b516e3 100644
        proper development environment (see [Setting up a dev
        environment](../../developer_guide.md#setting-up-a-dev-environment) below). Alternatively, you
 -      can use <https://develop.element.io> - the continuous integration release of
-+      can use <https://develop.seventwos.org> - the continuous integration release of
++      can use <https://develop.seventwos.com> - the continuous integration release of
        the develop branch.
  1. Configure the app by copying `config.sample.json` to `config.json` and
     modifying it. See the [configuration docs](../../docs/config.md) for details.
@@ -24,8 +24,8 @@ index 69339ee..17f7685 100644
 -        },
 -        "m.identity_server": {
 -            "base_url": "https://vector.im"
-+            "base_url": "https://workspace.seventwos.org",
-+            "server_name": "workspace.seventwos.org"
++            "base_url": "https://workspace.seventwos.com",
++            "server_name": "workspace.seventwos.com"
          }
      },
      "disable_custom_urls": false,
@@ -53,12 +53,12 @@ index 69339ee..17f7685 100644
      "default_theme": "light",
      "room_directory": {
 -        "servers": ["matrix.org"]
-+        "servers": ["workspace.seventwos.org"]
++        "servers": ["workspace.seventwos.com"]
      },
      "enable_presence_by_hs_url": {
 -        "https://matrix.org": false,
 -        "https://matrix-client.matrix.org": false
-+        "https://workspace.seventwos.org": false
++        "https://workspace.seventwos.com": false
      },
      "setting_defaults": {
          "breadcrumbs": true
@@ -392,7 +392,7 @@ index f1bea8d..23306a9 100644
          const url = new URL(window.location.href);
  
 -        // `appName` in the format `develop.element.io/abc/xyz`
-+        // `appName` in the format `develop.seventwos.org/abc/xyz`
++        // `appName` in the format `develop.seventwos.com/abc/xyz`
          const appName = [
              url.host,
              url.pathname.replace(/\/$/, ""), // Remove trailing slash if present
@@ -453,7 +453,7 @@ index 7fb270b..9034c75 100644
  // RIOT_OG_IMAGE_URL: specifies the URL to the image which should be used for the opengraph logo.
  // CSP_EXTRA_SOURCE: specifies a URL which should be appended to each CSP directive which uses 'self',
 -//   this can be helpful if your deployment has redirects for old bundles, such as develop.element.io.
-+//   this can be helpful if your deployment has redirects for old bundles, such as develop.seventwos.org.
++//   this can be helpful if your deployment has redirects for old bundles, such as develop.seventwos.com.
  
  let sentryWebpackPlugin: typeof sentryWebpackPluginType | undefined;
  // This plugin throws an error on import on some platforms like ppc64le & s390x even if the plugin isn't called,
@@ -471,12 +471,12 @@ index 7fb270b..9034c75 100644
      //
      // argv.mode is always set to "production" by pnpm build
 -    //      (called to build prod, nightly and develop.element.io)
-+    //      (called to build prod, nightly and develop.seventwos.org)
++    //      (called to build prod, nightly and develop.seventwos.com)
      // arg.mode is set to "development" by pnpm start
      //      (called by developers, runs the continuous reload script)
      // process.env.CI_PACKAGE is set when pnpm build is called from scripts/ci_package.sh
 -    //      (called to build nightly and develop.element.io)
-+    //      (called to build nightly and develop.seventwos.org)
++    //      (called to build nightly and develop.seventwos.com)
      const nodeEnv = argv.mode;
      const devMode = nodeEnv !== "production";
      const enableMinification = !devMode && !process.env.CI_PACKAGE;

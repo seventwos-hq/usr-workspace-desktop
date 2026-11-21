@@ -14,14 +14,14 @@ Desktop packages a pre-built Element Web bundle (`apps/desktop/scripts/fetch-pac
 4. Re-apply and verify branding:
    - `scripts/brand-guard.sh` must print `brand-guard: OK` (run on current develop: OK, exit 0).
    - New legitimate matches only: justify, then `scripts/brand-guard.sh --update` (regenerates baseline in `.brand-guard-allowlist`) and review the diff (unverified). Prefer rebranding over raising a baseline.
-   - Check `apps/desktop/package.json` (`name` seventwos-workspace-desktop, `productName` "Seventwos Workspace"), appId in `apps/desktop/electron-builder.ts`, and default homeserver in `apps/desktop/seventwos.org/release/config.json`.
+   - Check `apps/desktop/package.json` (`name` seventwos-workspace-desktop, `productName` "Seventwos Workspace"), appId in `apps/desktop/electron-builder.ts`, and default homeserver in `apps/desktop/seventwos.com/release/config.json`.
 5. Quick checks (all unverified): `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm test:unit`, `python3 scripts/upstream/validate_policy.py --help` for policy validation options. Only `documentation/` is OKF-validated (`scripts/okf/validate_okf_markdown.py --changed`); files in `docs/` need no frontmatter.
 6. Push `intake/<upstream-tag>` and open a PR into `develop`. Do not merge without review; do not tag or release.
 
 ## Invariants (must hold after every intake)
 
 - App name/ids stay Seventwos (`seventwos-workspace-desktop`, "Seventwos Workspace", Seventwos appId).
-- Default homeserver is `workspace.seventwos.org` (`apps/desktop/seventwos.org/release/config.json`, `apps/desktop/src/config.ts`).
+- Default homeserver is `workspace.seventwos.com` (`apps/desktop/seventwos.com/release/config.json`, `apps/desktop/src/config.ts`).
 - `scripts/brand-guard.sh` passes.
 - No `element.io` / `riot.im` / `app.element.*` URLs outside `.brand-guard-allowlist`.
 - `apps/web` stays absent.

@@ -33,7 +33,7 @@
     },
     {
       "upstream": "none",
-      "local": "apps/desktop/seventwos.org/**",
+      "local": "apps/desktop/seventwos.com/**",
       "mode": "protected-divergence",
       "reason": "Brand, endpoint, feature, and release configuration encode Seventwos product intent."
     },

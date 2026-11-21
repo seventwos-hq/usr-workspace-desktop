@@ -28,7 +28,7 @@ MANDATORY_MAPPINGS = (
     ("packages/**", "packages/**", "upstream-import-only"),
     ("modules/**", "modules/**", "protected-divergence"),
     (".github/workflows/**", ".github/workflows/**", "protected-divergence"),
-    ("none", "apps/desktop/seventwos.org/**", "protected-divergence"),
+    ("none", "apps/desktop/seventwos.com/**", "protected-divergence"),
     ("none", ".seventwos/**", "protected-divergence"),
 )
 MANDATORY_INVARIANTS = {

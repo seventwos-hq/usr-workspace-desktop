@@ -42,7 +42,7 @@ jobs:
                   WEB_BUNDLE_SHA256: ${{ inputs.web-bundle-sha256 }}
               run: |
                   set -euo pipefail
-                  [[ "$CONFIG" == "seventwos.org/release" || "$CONFIG" == "seventwos.org/preview" ]]
+                  [[ "$CONFIG" == "seventwos.com/release" || "$CONFIG" == "seventwos.com/preview" ]]
                   [[ "$WEB_BUNDLE_URL" == https://* ]]
                   [[ "$WEB_BUNDLE_SHA256" =~ ^[[:xdigit:]]{64}$ ]]
                   test -f "apps/desktop/$CONFIG/build.json"

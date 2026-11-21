@@ -16,18 +16,18 @@ This repository is a monorepo inherited from Element Web and governed by `.seven
 
 ### 1. Seventwos-owned layer (`protected-divergence` — where we work)
 
-- `apps/desktop/seventwos.org/` — Seventwos brand identity, endpoints (`workspace.seventwos.org`), themes, feature flags, and build/runtime configuration (`preview/config.json`, `preview/build.json`, `release/config.json`, `release/build.json`).
-- `modules/` — Seventwos-authored UI and product modules (`banner`, `restricted-guests`, `widget-lifecycle`, `widget-toggles`) built on the Element Web Module API (`@element-hq/element-web-module-api`). **Default rule**: implement new Seventwos UI and product features in `modules/` or `apps/desktop/seventwos.org/` first.
+- `apps/desktop/seventwos.com/` — Seventwos brand identity, endpoints (`workspace.seventwos.com`), themes, feature flags, and build/runtime configuration (`preview/config.json`, `preview/build.json`, `release/config.json`, `release/build.json`).
+- `modules/` — Seventwos-authored UI and product modules (`banner`, `restricted-guests`, `widget-lifecycle`, `widget-toggles`) built on the Element Web Module API (`@element-hq/element-web-module-api`). **Default rule**: implement new Seventwos UI and product features in `modules/` or `apps/desktop/seventwos.com/` first.
 - `.seventwos/` — selective upstream synchronisation policy (`upstream-policy.json`), path map (`upstream-path-map.json`), invariants (`upstream-invariants.json`), pinned upstream release (`upstream-pin.json`), selection state (`upstream-state.json`), immutable evidence (`.seventwos/evidence/`), and append-only decision ledger (`upstream-ledger.jsonl`), plus any explicit web-layer patch series under `.seventwos/patches/` for changes that the Module API or `config.json` cannot express.
 - `.github/workflows/` and `scripts/upstream/` — repository-owned CI, policy validation, and release automation.
 
 ### 2. Selective-review desktop shell (`selective-review`)
 
-- `apps/desktop/` (outside `apps/desktop/seventwos.org/`) — the Electron desktop application shell (formerly `element-desktop`). Keep Seventwos shell changes minimal and surgical so upstream Electron/desktop fixes can be reviewed and adopted individually.
+- `apps/desktop/` (outside `apps/desktop/seventwos.com/`) — the Electron desktop application shell (formerly `element-desktop`). Keep Seventwos shell changes minimal and surgical so upstream Electron/desktop fixes can be reviewed and adopted individually.
 
 ### 3. Read-only upstream imports (`upstream-import-only` — do not edit in place)
 
-- `packages/` (and `apps/web/` when present as a pinned source import) — must match a byte-identical import of the pinned upstream Element Web release tag recorded in `.seventwos/upstream-pin.json` (verified by `scripts/upstream/upstream_verify.py`). Never hand-edit files under `packages/` or `apps/web/`; layer Seventwos changes via `modules/`, `apps/desktop/seventwos.org/`, or `.seventwos/patches/`.
+- `packages/` (and `apps/web/` when present as a pinned source import) — must match a byte-identical import of the pinned upstream Element Web release tag recorded in `.seventwos/upstream-pin.json` (verified by `scripts/upstream/upstream_verify.py`). Never hand-edit files under `packages/` or `apps/web/`; layer Seventwos changes via `modules/`, `apps/desktop/seventwos.com/`, or `.seventwos/patches/`.
 
 ## Selective upstream synchronization
 

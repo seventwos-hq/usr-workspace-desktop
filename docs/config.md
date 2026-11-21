@@ -19,8 +19,8 @@ this repository.
 This repository does not operate any Element-hosted instance (there is no `app.element.io` or
 `develop.element.io` equivalent for this fork). For examples of configs actually used to build this
 product, see
-[`apps/desktop/seventwos.org/release/config.json`](../apps/desktop/seventwos.org/release/config.json) and
-[`apps/desktop/seventwos.org/preview/config.json`](../apps/desktop/seventwos.org/preview/config.json). Both
+[`apps/desktop/seventwos.com/release/config.json`](../apps/desktop/seventwos.com/release/config.json) and
+[`apps/desktop/seventwos.com/preview/config.json`](../apps/desktop/seventwos.com/preview/config.json). Both
 intentionally omit homeserver, identity server, telemetry, rageshake, maps, call, and Scalar integration
 endpoints; operators must add their own endpoints explicitly rather than relying on the upstream bundle's
 built-in Element-hosted defaults described below.

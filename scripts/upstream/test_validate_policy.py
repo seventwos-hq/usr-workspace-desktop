@@ -232,7 +232,7 @@ class ValidatePolicyTests(unittest.TestCase):
         path_map = VALIDATOR.load_json(VALIDATOR.REQUIRED_FILES["path_map"])
         invariants = VALIDATOR.load_json(VALIDATOR.REQUIRED_FILES["invariants"])
         for mapping in path_map["mappings"]:
-            if mapping.get("local") == "apps/desktop/seventwos.org/**":
+            if mapping.get("local") == "apps/desktop/seventwos.com/**":
                 mapping["mode"] = "selective-review"
         with self.assertRaisesRegex(VALIDATOR.ValidationError, "path-map protection"):
             VALIDATOR.validate_policy_semantics(policy, state, path_map, invariants)

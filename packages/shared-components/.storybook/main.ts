@@ -1,7 +1,7 @@
 /*
 Copyright 2025 New Vector Ltd.
 
-SPDX-License-Identifier: AGPL-3.0-only
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
 Please see LICENSE files in the repository root for full details.
 */
 
@@ -101,7 +101,7 @@ const config: StorybookConfig = {
                                 // the app requests.
                                 const langFile = req.url.split("/").pop();
                                 res.setHeader("Content-Type", "application/json");
-                                fs.createReadStream(`src/i18n/strings/${langFile}`).pipe(res);
+                                fs.createReadStream(path.join(srcRoot, `i18n/strings/${langFile}`)).pipe(res);
                             } else {
                                 next();
                             }

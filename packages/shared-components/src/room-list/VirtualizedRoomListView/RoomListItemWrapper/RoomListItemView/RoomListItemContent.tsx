@@ -1,7 +1,7 @@
 /*
  * Copyright 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -55,7 +55,7 @@ export const RoomListItemContent = memo(function RoomListItemContent({
                     <div className={styles.roomName} title={item.name} data-testid="room-name">
                         {item.name}
                         {item.userStatus && (
-                            <Tooltip description={item.userStatus.text}>
+                            <Tooltip description={item.userStatus.text} maxWidth="30ch" maxLines={1}>
                                 <Text as="span" className={styles.userStatusEmoji}>
                                     {item.userStatus.emoji}
                                 </Text>

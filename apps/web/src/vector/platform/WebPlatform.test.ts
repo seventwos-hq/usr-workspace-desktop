@@ -1,0 +1,345 @@
+/*
+Copyright 2024 New Vector Ltd.
+Copyright 2022 The Matrix.org Foundation C.I.C.
+
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
+Please see LICENSE files in the repository root for full details.
+*/
+
+// @vitest-environment happy-dom
+
+import { vi, describe, it, expect, afterAll, beforeEach } from "vitest";
+import fetchMock from "@fetch-mock/vitest";
+import { emitPromise } from "test-utils/utilities";
+import { tearDownAfterTest } from "test-utils";
+import "vitest-canvas-mock";
+
+import { UpdateCheckStatus } from "../../BasePlatform";
+import { MatrixClientPeg } from "../../MatrixClientPeg";
+import WebPlatform from "./WebPlatform";
+import ToastStore from "../../stores/ToastStore.ts";
+import defaultDispatcher from "../../dispatcher/dispatcher.ts";
+import { Action } from "../../dispatcher/actions.ts";
+
+describe("WebPlatform", () => {
+    /** The active service worker, as resolved by `navigator.serviceWorker.ready`. */
+    const activeServiceWorker = { postMessage: vi.fn() };
+
+    /** Mock `navigator.serviceWorker`, with `controller` set to the service worker controlling the page, if any. */
+    function mockServiceWorkerContainer(controller: object | null): void {
+        vi.spyOn(global, "navigator", "get").mockReturnValue({
+            ...navigator,
+            serviceWorker: {
+                register: vi.fn().mockResolvedValue({
+                    update: vi.fn(),
+                }),
+                addEventListener: vi.fn(),
+                controller,
+                ready: Promise.resolve({ active: activeServiceWorker }),
+            } as unknown as ServiceWorkerContainer,
+        });
+    }
+
+    beforeEach(() => {
+        activeServiceWorker.postMessage.mockClear();
+        mockServiceWorkerContainer(activeServiceWorker);
+    });
+
+    it("returns human readable name", () => {
+        const platform = tearDownAfterTest(new WebPlatform());
+        expect(platform.getHumanReadableName()).toEqual("Web Platform");
+    });
+
+    it("stops listening to the dispatcher and polling for updates when destroyed", () => {
+        vi.useFakeTimers();
+        const platform = new WebPlatform();
+        const pollSpy = vi
+            .spyOn(platform, "pollForUpdate")
+            .mockResolvedValue({ status: UpdateCheckStatus.NotAvailable });
+        const unregisterSpy = vi.spyOn(defaultDispatcher, "unregister");
+        platform.startUpdater();
+        pollSpy.mockClear();
+
+        platform.destroy();
+        vi.runOnlyPendingTimers();
+
+        expect(unregisterSpy).toHaveBeenCalled();
+        expect(pollSpy).not.toHaveBeenCalled();
+        vi.useRealTimers();
+    });
+
+    describe("service worker", () => {
+        it("registers successfully", () => {
+            tearDownAfterTest(new WebPlatform());
+            expect(navigator.serviceWorker.register).toHaveBeenCalled();
+        });
+
+        it("listens for messages from the service worker before registering it", async () => {
+            const platform = tearDownAfterTest(new WebPlatform());
+            await platform["registerServiceWorkerPromise"];
+            expect(vi.mocked(navigator.serviceWorker.addEventListener).mock.invocationCallOrder[0]).toBeLessThan(
+                vi.mocked(navigator.serviceWorker.register).mock.invocationCallOrder[0],
+            );
+        });
+
+        it("does not ask the service worker to claim the page when it is already in control", async () => {
+            const platform = tearDownAfterTest(new WebPlatform());
+            await platform["registerServiceWorkerPromise"];
+            expect(activeServiceWorker.postMessage).not.toHaveBeenCalled();
+        });
+
+        it("asks the service worker to claim the page when it is not in control, e.g. after a hard reload", async () => {
+            mockServiceWorkerContainer(null);
+            const platform = tearDownAfterTest(new WebPlatform());
+            await platform["registerServiceWorkerPromise"];
+            expect(activeServiceWorker.postMessage).toHaveBeenCalledWith({ type: "claim" });
+        });
+
+        it("handles errors", async () => {
+            vi.spyOn(global, "navigator", "get").mockReturnValue({
+                serviceWorker: {
+                    // @ts-expect-error - mocking readonly object
+                    register: undefined,
+                },
+            });
+            tearDownAfterTest(new WebPlatform());
+
+            defaultDispatcher.dispatch({ action: Action.ClientStarted });
+            await emitPromise(ToastStore.sharedInstance(), "update");
+            const toasts = ToastStore.sharedInstance().getToasts();
+            expect(toasts).toHaveLength(1);
+            expect(toasts[0].title).toEqual("Failed to load service worker");
+        });
+    });
+
+    it("should call reload on window location object", () => {
+        Object.defineProperty(window, "location", { value: { reload: vi.fn() }, writable: true });
+
+        const platform = tearDownAfterTest(new WebPlatform());
+        expect(window.location.reload).not.toHaveBeenCalled();
+        platform.reload();
+        expect(window.location.reload).toHaveBeenCalled();
+    });
+
+    it("should call reload to install update", () => {
+        Object.defineProperty(window, "location", { value: { reload: vi.fn() }, writable: true });
+
+        const platform = tearDownAfterTest(new WebPlatform());
+        expect(window.location.reload).not.toHaveBeenCalled();
+        platform.installUpdate();
+        expect(window.location.reload).toHaveBeenCalled();
+    });
+
+    describe("getDefaultDeviceDisplayName", () => {
+        it.each([
+            [
+                "https://develop.element.io/#/room/!foo:bar",
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) " +
+                    "Chrome/105.0.0.0 Safari/537.36",
+                "develop.element.io: Chrome on macOS",
+            ],
+        ])("%s & %s = %s", (url, userAgent, result) => {
+            vi.spyOn(global, "navigator", "get").mockReturnValue({ userAgent } as Navigator);
+            Object.defineProperty(window, "location", { value: { href: url }, writable: true });
+            const platform = tearDownAfterTest(new WebPlatform());
+            expect(platform.getDefaultDeviceDisplayName()).toEqual(result);
+        });
+    });
+
+    describe("notification support", () => {
+        const mockNotification = {
+            requestPermission: vi.fn(),
+            permission: "notGranted",
+        };
+        beforeEach(() => {
+            // @ts-ignore
+            window.Notification = mockNotification;
+            mockNotification.permission = "notGranted";
+        });
+
+        it("supportsNotifications returns false when platform does not support notifications", () => {
+            // @ts-ignore
+            window.Notification = undefined;
+            expect(tearDownAfterTest(new WebPlatform()).supportsNotifications()).toBe(false);
+        });
+
+        it("supportsNotifications returns true when platform supports notifications", () => {
+            expect(tearDownAfterTest(new WebPlatform()).supportsNotifications()).toBe(true);
+        });
+
+        it("maySendNotifications returns true when notification permissions are not granted", () => {
+            expect(tearDownAfterTest(new WebPlatform()).maySendNotifications()).toBe(false);
+        });
+
+        it("maySendNotifications returns true when notification permissions are granted", () => {
+            mockNotification.permission = "granted";
+            expect(tearDownAfterTest(new WebPlatform()).maySendNotifications()).toBe(true);
+        });
+
+        it("requests notification permissions and returns result", async () => {
+            mockNotification.requestPermission.mockImplementation((callback) => callback("test"));
+
+            const platform = tearDownAfterTest(new WebPlatform());
+            const result = await platform.requestNotificationPermission();
+            expect(result).toEqual("test");
+        });
+    });
+
+    describe("app version", () => {
+        // oxlint-disable-next-line node/no-process-env
+        const envVersion = process.env.VERSION;
+        const prodVersion = "1.10.13";
+
+        beforeEach(() => {
+            vi.spyOn(MatrixClientPeg, "userRegisteredWithinLastHours").mockReturnValue(false);
+        });
+
+        afterAll(() => {
+            // @ts-ignore
+            WebPlatform.VERSION = envVersion;
+        });
+
+        it("should return true from canSelfUpdate()", async () => {
+            const platform = tearDownAfterTest(new WebPlatform());
+            const result = await platform.canSelfUpdate();
+            expect(result).toBe(true);
+        });
+
+        it("getAppVersion returns normalized app version", async () => {
+            // @ts-ignore
+            WebPlatform.VERSION = prodVersion;
+            const platform = tearDownAfterTest(new WebPlatform());
+
+            const version = await platform.getAppVersion();
+            expect(version).toEqual(prodVersion);
+
+            // @ts-ignore
+            WebPlatform.VERSION = `v${prodVersion}`;
+            const version2 = await platform.getAppVersion();
+            // v prefix removed
+            expect(version2).toEqual(prodVersion);
+
+            // @ts-ignore
+            WebPlatform.VERSION = `version not like semver`;
+            const notSemverVersion = await platform.getAppVersion();
+            expect(notSemverVersion).toEqual(`version not like semver`);
+        });
+
+        describe("pollForUpdate()", () => {
+            it("should return not available and call showNoUpdate when current version matches most recent version", async () => {
+                // @ts-ignore
+                WebPlatform.VERSION = prodVersion;
+                fetchMock.getOnce("end:/version", prodVersion);
+                const platform = tearDownAfterTest(new WebPlatform());
+
+                const showUpdate = vi.fn();
+                const showNoUpdate = vi.fn();
+                const result = await platform.pollForUpdate(showUpdate, showNoUpdate);
+
+                expect(result).toEqual({ status: UpdateCheckStatus.NotAvailable });
+                expect(showUpdate).not.toHaveBeenCalled();
+                expect(showNoUpdate).toHaveBeenCalled();
+            });
+
+            it("should strip v prefix from versions before comparing", async () => {
+                // @ts-ignore
+                WebPlatform.VERSION = prodVersion;
+                fetchMock.getOnce("end:/version", `v${prodVersion}`);
+                const platform = tearDownAfterTest(new WebPlatform());
+
+                const showUpdate = vi.fn();
+                const showNoUpdate = vi.fn();
+                const result = await platform.pollForUpdate(showUpdate, showNoUpdate);
+
+                // versions only differ by v prefix, no update
+                expect(result).toEqual({ status: UpdateCheckStatus.NotAvailable });
+                expect(showUpdate).not.toHaveBeenCalled();
+                expect(showNoUpdate).toHaveBeenCalled();
+            });
+
+            it("should return ready and call showUpdate when current version differs from most recent version", async () => {
+                // @ts-ignore
+                WebPlatform.VERSION = "0.0.0"; // old version
+                fetchMock.getOnce("end:/version", prodVersion);
+                const platform = tearDownAfterTest(new WebPlatform());
+
+                const showUpdate = vi.fn();
+                const showNoUpdate = vi.fn();
+                const result = await platform.pollForUpdate(showUpdate, showNoUpdate);
+
+                expect(result).toEqual({ status: UpdateCheckStatus.Ready });
+                expect(showUpdate).toHaveBeenCalledWith("0.0.0", prodVersion);
+                expect(showNoUpdate).not.toHaveBeenCalled();
+            });
+
+            it("should return ready without showing update when user registered in last 24", async () => {
+                // @ts-ignore
+                WebPlatform.VERSION = "0.0.0"; // old version
+                vi.spyOn(MatrixClientPeg, "userRegisteredWithinLastHours").mockReturnValue(true);
+                fetchMock.getOnce("end:/version", prodVersion);
+                const platform = tearDownAfterTest(new WebPlatform());
+
+                const showUpdate = vi.fn();
+                const showNoUpdate = vi.fn();
+                const result = await platform.pollForUpdate(showUpdate, showNoUpdate);
+
+                expect(result).toEqual({ status: UpdateCheckStatus.Ready });
+                expect(showUpdate).not.toHaveBeenCalled();
+                expect(showNoUpdate).not.toHaveBeenCalled();
+            });
+
+            it("should return error when version check fails", async () => {
+                fetchMock.getOnce("end:/version", { throws: "oups" });
+                const platform = tearDownAfterTest(new WebPlatform());
+
+                const showUpdate = vi.fn();
+                const showNoUpdate = vi.fn();
+                const result = await platform.pollForUpdate(showUpdate, showNoUpdate);
+
+                expect(result).toEqual({ status: UpdateCheckStatus.Error, detail: "Unknown Error" });
+                expect(showUpdate).not.toHaveBeenCalled();
+                expect(showNoUpdate).not.toHaveBeenCalled();
+            });
+        });
+    });
+
+    it("should return config from config.json", async () => {
+        window.location.hostname = "domain.com";
+        fetchMock.get(/config\.json.*/, { brand: "test" });
+        const platform = tearDownAfterTest(new WebPlatform());
+        await expect(platform.getConfig()).resolves.toEqual(expect.objectContaining({ brand: "test" }));
+    });
+
+    it("should re-render favicon when setting error status", () => {
+        const platform = tearDownAfterTest(new WebPlatform());
+        const spy = vi.spyOn(platform.favicon, "badge");
+        platform.setErrorStatus(true);
+        expect(spy).toHaveBeenCalledWith(expect.anything(), { bgColor: "#f00" });
+    });
+
+    it("should not clear sessionStorage when clearing its storage", async () => {
+        // Logging out has already cleared it, and a new login may have started using it since
+        sessionStorage.setItem("mx_oidc_test", "value");
+        await tearDownAfterTest(new WebPlatform()).clearStorage();
+        expect(sessionStorage.getItem("mx_oidc_test")).toEqual("value");
+        sessionStorage.removeItem("mx_oidc_test");
+    });
+
+    describe("getOAuthCallbackUrl()", () => {
+        it("should not include the 'updated' query param in the redirect URI", () => {
+            Object.defineProperty(window, "location", {
+                value: {
+                    href: "https://element.example.com/?updated=1.12.12",
+                    origin: "https://element.example.com",
+                    pathname: "/",
+                },
+                writable: true,
+            });
+            const platform = tearDownAfterTest(new WebPlatform());
+            const url = platform.getOAuthCallbackUrl();
+
+            expect(url.searchParams.has("updated")).toBe(false);
+            expect(url.searchParams.get("no_universal_links")).toEqual("true");
+        });
+    });
+});

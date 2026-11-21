@@ -1,7 +1,7 @@
 /*
  * Copyright 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -81,7 +81,9 @@ export const WithJumpToDatePicker: Story = {
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         await userEvent.click(canvas.getByText("Today"));
-        await expect(within(canvasElement.ownerDocument.body).findByText("Jump to date")).resolves.toBeInTheDocument();
+        await expect(
+            within(canvasElement.ownerDocument.body).findByText("Scroll to date"),
+        ).resolves.toBeInTheDocument();
     },
 };
 

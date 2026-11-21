@@ -1,7 +1,7 @@
 /*
  * Copyright 2025 New Vector Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -59,7 +59,7 @@ export function PillInput({
     return (
         <Flex
             {...props}
-            gap="var(--cpd-space-1x)"
+            gap="var(--cpd-space-2x)"
             direction="column"
             className={classNames(styles.pillInput, className)}
             onClick={(evt) => {
@@ -69,14 +69,14 @@ export function PillInput({
             }}
         >
             {hasChildren && (
-                <Flex gap="var(--cpd-space-1x)" wrap="wrap" align="center">
+                <Flex gap="var(--cpd-space-2x)" wrap="wrap" align="center">
                     {children}
                 </Flex>
             )}
             <input
                 ref={ref}
                 autoComplete="off"
-                className={classNames(styles.input, { [styles.largerInput]: hasChildren })}
+                className={styles.input}
                 onKeyDown={(evt) => {
                     const value = evt.currentTarget.value.trim();
 

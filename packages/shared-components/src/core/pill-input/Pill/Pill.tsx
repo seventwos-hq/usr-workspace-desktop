@@ -1,7 +1,7 @@
 /*
  * Copyright 2025 New Vector Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -44,7 +44,7 @@ export function Pill({ className, children, label, onClick, ...props }: PropsWit
     return (
         <Flex
             display="inline-flex"
-            gap="var(--cpd-space-1-5x)"
+            gap="var(--cpd-space-1x)"
             align="center"
             className={classNames(styles.pill, className)}
             {...props}
@@ -55,11 +55,12 @@ export function Pill({ className, children, label, onClick, ...props }: PropsWit
             </span>
             {onClick && (
                 <IconButton
+                    type="button"
                     aria-describedby={id}
                     size="16px"
                     onClick={onClick}
                     aria-label={_t("action|delete")}
-                    className="mx_Dialog_nonDialogButton"
+                    className={classNames(styles.icon, "mx_Dialog_nonDialogButton")}
                 >
                     <CloseIcon />
                 </IconButton>

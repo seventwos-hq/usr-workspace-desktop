@@ -1,7 +1,7 @@
 /*
  * Copyright 2026 Element Creations Ltd.
  *
- * SPDX-License-Identifier: AGPL-3.0-only
+ * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
 
@@ -10,6 +10,7 @@ import { Field, Link, Menu, Root, TextControl } from "@vector-im/compound-web";
 
 import { _t, type UserStatus } from "..";
 import { EmojiPicker } from "../core/EmojiPicker";
+import { limitUserStatusInputText } from "../core/userStatus";
 import styles from "./CustomStatusView.module.css";
 import classNames from "classnames";
 
@@ -123,7 +124,7 @@ export function CustomStatusView({
             <Field name="custom-status" className={styles.textField}>
                 <TextControl
                     value={text}
-                    onChange={(ev) => setText(ev.currentTarget.value)}
+                    onChange={(ev) => setText(limitUserStatusInputText(ev.currentTarget.value))}
                     placeholder={_t("status|set_status|set_status_prompt")}
                     aria-label={_t("status|set_status|set_status_prompt")}
                     autoFocus

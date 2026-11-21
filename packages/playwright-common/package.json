@@ -1,17 +1,14 @@
 {
     "name": "@element-hq/element-web-playwright-common",
     "type": "module",
-    "version": "6.2.0",
-    "private": true,
-    "license": "AGPL-3.0-only",
+    "version": "7.0.0",
+    "license": "SEE LICENSE IN README.md",
     "repository": {
         "type": "git",
-        "url": "https://github.com/seventwos-hq/usr-workspace-desktop",
+        "url": "git+https://github.com/element-hq/element-web.git",
         "directory": "packages/playwright-common"
     },
-    "author": {
-        "name": "Seventwos"
-    },
+    "author": "element-hq",
     "engines": {
         "node": ">=20.0.0"
     },
@@ -22,7 +19,8 @@
     },
     "scripts": {
         "prepack": "nx build:playwright",
-        "lint:types": "nx lint:types"
+        "lint:types": "nx lint:types",
+        "test:unit": "vitest"
     },
     "publishConfig": {
         "executableFiles": [
@@ -32,12 +30,13 @@
     "devDependencies": {
         "@element-hq/element-web-module-api": "workspace:*",
         "@types/lodash-es": "^4.17.12",
-        "typescript": "catalog:"
+        "typescript": "catalog:",
+        "vitest": "catalog:"
     },
     "dependencies": {
         "@axe-core/playwright": "^4.10.1",
         "@testcontainers/postgresql": "^12.0.0",
-        "glob": "^14.0.2",
+        "glob": "^14.0.0",
         "lodash-es": "^4.17.23",
         "mailpit-api": "^2.0.0",
         "strip-ansi": "^7.1.0",

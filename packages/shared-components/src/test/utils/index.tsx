@@ -3,7 +3,7 @@ Copyright 2025 Element Creations Ltd.
 Copyright 2024 New Vector Ltd.
 Copyright 2022 The Matrix.org Foundation C.I.C.
 
-SPDX-License-Identifier: AGPL-3.0-only
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
 Please see LICENSE files in the repository root for full details.
 */
 
@@ -21,6 +21,7 @@ import {
     EventPresentationProvider,
     I18nApi,
     I18nContext,
+    LinkedTextContext,
     type EventPresentation,
 } from "../..";
 
@@ -29,6 +30,7 @@ type SharedRenderOptions = RenderOptions & {
 };
 
 const i18nApi = new I18nApi();
+const linkedTextConfiguration = {};
 
 const wrapWithTooltipProvider = (Wrapper: RenderOptions["wrapper"], presentation?: Partial<EventPresentation>) => {
     return ({ children }: { children: React.ReactNode }) => {
@@ -43,15 +45,13 @@ const wrapWithTooltipProvider = (Wrapper: RenderOptions["wrapper"], presentation
             <TooltipProvider>{children}</TooltipProvider>
         );
 
-        if (Wrapper) {
-            return (
-                <I18nContext.Provider value={i18nApi}>
-                    <Wrapper>{content}</Wrapper>
-                </I18nContext.Provider>
-            );
-        } else {
-            return <I18nContext.Provider value={i18nApi}>{content}</I18nContext.Provider>;
-        }
+        const wrapped = Wrapper ? <Wrapper>{content}</Wrapper> : content;
+
+        return (
+            <I18nContext.Provider value={i18nApi}>
+                <LinkedTextContext.Provider value={linkedTextConfiguration}>{wrapped}</LinkedTextContext.Provider>
+            </I18nContext.Provider>
+        );
     };
 };
 

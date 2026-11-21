@@ -1,0 +1,279 @@
+/*
+Copyright 2024 New Vector Ltd.
+
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
+Please see LICENSE files in the repository root for full details.
+*/
+
+// @vitest-environment happy-dom
+
+import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
+import React from "react";
+import { act, render, screen } from "test-utils-rtl";
+import EventEmitter from "node:events";
+import { stubClient, tearDownAfterTest } from "test-utils";
+
+import CompleteSecurity from "./CompleteSecurity";
+import { Phase, SetupEncryptionStore } from "../../../stores/SetupEncryptionStore";
+import SdkConfig from "../../../SdkConfig";
+import { KnownMembership, Room } from "matrix-js-sdk/src/matrix";
+
+class MockSetupEncryptionStore extends EventEmitter {
+    public phase: Phase = Phase.Intro;
+    public lostKeys(): boolean {
+        return false;
+    }
+
+    public start: () => void = vi.fn();
+    public stop: () => void = vi.fn();
+}
+
+describe("CompleteSecurity", () => {
+    beforeEach(() => {
+        const client = stubClient();
+        const deviceIdToDevice = new Map();
+        deviceIdToDevice.set("DEVICE_ID", {
+            deviceId: "DEVICE_ID",
+            userId: "USER_ID",
+        });
+        const userIdToDevices = new Map();
+        userIdToDevices.set("USER_ID", deviceIdToDevice);
+        vi.mocked(client.getCrypto()!.getUserDeviceInfo).mockResolvedValue(userIdToDevices);
+
+        const mockSetupEncryptionStore = new MockSetupEncryptionStore();
+        vi.spyOn(SetupEncryptionStore, "sharedInstance").mockReturnValue(
+            mockSetupEncryptionStore as SetupEncryptionStore,
+        );
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it("should not render with a cancel button by default", () => {
+        render(<CompleteSecurity onFinished={() => {}} />);
+
+        expect(screen.queryByRole("button", { name: "Skip verification for now" })).not.toBeInTheDocument();
+    });
+
+    it("Renders with a cancel button if forceVerification false", () => {
+        vi.spyOn(SdkConfig, "get").mockImplementation((key: string) => {
+            if (key === "forceVerification") {
+                return false;
+            }
+        });
+
+        render(<CompleteSecurity onFinished={() => {}} />);
+
+        expect(screen.getByRole("button", { name: "Skip verification for now" })).toBeInTheDocument();
+    });
+
+    it("Renders without a cancel button if forceVerification true", () => {
+        vi.spyOn(SdkConfig, "get").mockImplementation((key: string) => {
+            if (key === "force_verification") {
+                return true;
+            }
+        });
+
+        render(<CompleteSecurity onFinished={() => {}} />);
+
+        expect(screen.queryByRole("button", { name: "Skip verification for now" })).not.toBeInTheDocument();
+    });
+
+    it("Renders a warning if user hits Reset", async () => {
+        // Given there is no recovery key and no other devices
+        const store = tearDownAfterTest(new SetupEncryptionStore());
+        vi.spyOn(SetupEncryptionStore, "sharedInstance").mockReturnValue(store);
+        const panel = await act(() => render(<CompleteSecurity onFinished={() => {}} />));
+
+        // No recovery methods are available, so their buttons are disabled.
+        expect(screen.getByText("Use recovery key")).toHaveAttribute("aria-disabled", "true");
+        expect(screen.getByText("Use another device")).toHaveAttribute("aria-disabled", "true");
+
+        // The "Can't confirm?" button is visible, enabled and is primary.
+        expect(screen.queryByRole("button", { name: "Can't confirm?" })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Can't confirm?" })).toHaveAttribute("data-kind", "primary");
+
+        // And you also have the option to sign out
+        expect(screen.queryByRole("button", { name: "Sign out" })).toBeInTheDocument();
+
+        // When we hit "Can't confirm?"
+        await act(async () => panel.getByRole("button", { name: "Can't confirm?" }).click());
+
+        // Then the reset identity dialog appears
+        expect(screen.getByRole("heading", { name: "You need to reset your digital identity" })).toBeInTheDocument();
+        expect(panel.getByRole("button", { name: "Continue" })).toBeInTheDocument();
+    });
+
+    it("Allows verifying with another device if one is available", async () => {
+        // Given there is no recovery key but there are other devices
+        const store = tearDownAfterTest(new SetupEncryptionStore());
+        vi.spyOn(store, "fetchKeyInfo").mockImplementation(async () => {
+            store.hasDevicesToVerifyAgainst = true;
+            store.phase = Phase.Intro;
+            store.emit("update");
+        });
+        vi.spyOn(SetupEncryptionStore, "sharedInstance").mockReturnValue(store);
+        const panel = await act(() => render(<CompleteSecurity onFinished={() => {}} />));
+
+        // "Use recovery key" should be disabled
+        expect(screen.getByText("Use recovery key")).toHaveAttribute("aria-disabled", "true");
+
+        // But "Use another device" and "Can't confirm?" are visible and enabled.
+        expect(screen.queryByRole("button", { name: "Use another device" })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Can't confirm?" })).toBeInTheDocument();
+
+        // The "Can't confirm?" button is secondary because it is a last resort
+        expect(screen.queryByRole("button", { name: "Can't confirm?" })).toHaveAttribute("data-kind", "secondary");
+
+        // When we hit "Can't confirm?"
+        await act(async () => panel.getByRole("button", { name: "Can't confirm?" }).click());
+
+        // Then the reset identity dialog appears, and should have a different
+        // title from when there were no verification methods available.
+        expect(
+            screen.getByRole("heading", { name: "Can't confirm? You’ll need to reset your digital identity." }),
+        ).toBeInTheDocument();
+    });
+
+    it("Allows verifying with recovery key if one is available", async () => {
+        // Given there are no other devices but there is a recovery key
+        const store = tearDownAfterTest(new SetupEncryptionStore());
+        vi.spyOn(store, "fetchKeyInfo").mockImplementation(async () => {
+            store.keyInfo = {} as any;
+            store.phase = Phase.Intro;
+            store.emit("update");
+        });
+        vi.spyOn(SetupEncryptionStore, "sharedInstance").mockReturnValue(store);
+        const panel = await act(() => render(<CompleteSecurity onFinished={() => {}} />));
+
+        // "Use another device" should be disabled
+        expect(screen.getByText("Use another device")).toHaveAttribute("aria-disabled", "true");
+
+        // But "Use recovery key" and "Can't confirm?" are visible and enabled.
+        expect(screen.queryByRole("button", { name: "Use recovery key" })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Can't confirm?" })).toBeInTheDocument();
+
+        // The "Can't confirm?" button is secondary because it is a last resort
+        expect(screen.queryByRole("button", { name: "Can't confirm?" })).toHaveAttribute("data-kind", "secondary");
+
+        // When we hit "Can't confirm?"
+        await act(async () => panel.getByRole("button", { name: "Can't confirm?" }).click());
+
+        // Then the reset identity dialog appears, and should have a different
+        // title from when there were no verification methods available.
+        expect(
+            screen.getByRole("heading", { name: "Can't confirm? You’ll need to reset your digital identity." }),
+        ).toBeInTheDocument();
+    });
+
+    it("Launches reset dialog with 'no_recovery_key' variant when I have no way to verify", async () => {
+        // Given there are no other devices, no recovery key but I do have encrypted rooms
+        const store = tearDownAfterTest(new SetupEncryptionStore());
+        vi.spyOn(SetupEncryptionStore, "sharedInstance").mockReturnValue(store);
+        const panel = await act(() => render(<CompleteSecurity onFinished={() => {}} anyEncryptedRooms={true} />));
+
+        // When we hit "Can't confirm?"
+        await act(async () => panel.getByRole("button", { name: "Can't confirm?" }).click());
+
+        // Then the reset identity dialog appears, telling you that you have no
+        // option, so you may as well reset.
+        expect(screen.getByRole("heading", { name: "You need to reset your digital identity" })).toBeInTheDocument();
+
+        expect(
+            screen.getByText(
+                "You don't have access to any other verified devices or a recovery key, so you'll need to reset your digital identity to continue using the app.",
+            ),
+        ).toBeInTheDocument();
+
+        // Including a warning about losing chat history
+        expect(
+            screen.getByText("You'll lose any encrypted chat history that's stored only on the server"),
+        ).toBeInTheDocument();
+    });
+
+    it("Launches reset dialog with 'no_encrypted_rooms' variant when I have no encrypted rooms", async () => {
+        // Given there are no other devices, no recovery key and no encrypted rooms
+        const store = tearDownAfterTest(new SetupEncryptionStore());
+        vi.spyOn(SetupEncryptionStore, "sharedInstance").mockReturnValue(store);
+        const panel = await act(() => render(<CompleteSecurity onFinished={() => {}} anyEncryptedRooms={false} />));
+
+        // When we hit "Can't confirm?"
+        await act(async () => panel.getByRole("button", { name: "Can't confirm?" }).click());
+
+        // Then the reset identity dialog appears, telling you that you have no
+        // encrypted rooms, so this is not too bad.
+        expect(screen.getByRole("heading", { name: "You need to reset your digital identity" })).toBeInTheDocument();
+
+        expect(
+            screen.getByText(
+                "You don't have access to any other verified devices or a recovery key, so you'll need to reset your digital identity to continue using the app.",
+            ),
+        ).toBeInTheDocument();
+
+        // In particular, there is NO warning about losing chat history
+        expect(
+            screen.queryByText("You'll lose any encrypted chat history that's stored only on the server"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("Finds encrypted rooms when they exist", () => {
+        // Given some encrypted room exists (as well as another)
+        const client = stubClient();
+        const publicRoom = new Room("!r1:s.co", client, "@u:s.co");
+        publicRoom.getMyMembership = vi.fn().mockReturnValue(KnownMembership.Join);
+        const encryptedRoom = new Room("!r2:s.co", client, "@u:s.co");
+        encryptedRoom.hasEncryptionStateEvent = vi.fn().mockReturnValue(true);
+        encryptedRoom.getMyMembership = vi.fn().mockReturnValue(KnownMembership.Join);
+        client.getRooms = vi.fn().mockReturnValue([publicRoom, encryptedRoom]);
+
+        // When we ask whether there are encrypted rooms
+        // Then the answer is yes
+        expect(CompleteSecurity.anyEncryptedRooms(client)).toBeTruthy();
+    });
+
+    it("Finds no encrypted rooms when they don't exist", () => {
+        // Given no encrypted rooms exist but some others do
+        const client = stubClient();
+        const publicRoom1 = new Room("!r1:s.co", client, "@u:s.co");
+        publicRoom1.getMyMembership = vi.fn().mockReturnValue(KnownMembership.Join);
+        const publicRoom2 = new Room("!r2:s.co", client, "@u:s.co");
+        publicRoom2.getMyMembership = vi.fn().mockReturnValue(KnownMembership.Join);
+        client.getRooms = vi.fn().mockReturnValue([publicRoom1, publicRoom2]);
+
+        // When we ask whether there are encrypted rooms
+        // Then the answer is no
+        expect(CompleteSecurity.anyEncryptedRooms(client)).toBeFalsy();
+    });
+
+    it("Ignores encrypted spaces", () => {
+        // Given an enecrypted space exists but no rooms
+        const client = stubClient();
+        const encryptedSpace = new Room("!r1:s.co", client, "@u:s.co");
+        encryptedSpace.hasEncryptionStateEvent = vi.fn().mockReturnValue(true);
+        encryptedSpace.isSpaceRoom = vi.fn().mockReturnValue(true);
+        encryptedSpace.getMyMembership = vi.fn().mockReturnValue(KnownMembership.Join);
+        const publicRoom = new Room("!r2:s.co", client, "@u:s.co");
+        publicRoom.getMyMembership = vi.fn().mockReturnValue(KnownMembership.Join);
+        client.getRooms = vi.fn().mockReturnValue([encryptedSpace, publicRoom]);
+
+        // When we ask whether there are encrypted rooms
+        // Then the answer is no
+        expect(CompleteSecurity.anyEncryptedRooms(client)).toBeFalsy();
+    });
+
+    it("Ignores non-joined rooms", () => {
+        // Given some encrypted room exists but the user is not a member of it
+        const client = stubClient();
+        const publicRoom = new Room("!r1:s.co", client, "@u:s.co");
+        publicRoom.getMyMembership = vi.fn().mockReturnValue(KnownMembership.Join);
+        const encryptedRoom = new Room("!r2:s.co", client, "@u:s.co");
+        encryptedRoom.getMyMembership = vi.fn().mockReturnValue(KnownMembership.Leave);
+        encryptedRoom.hasEncryptionStateEvent = vi.fn().mockReturnValue(true);
+        client.getRooms = vi.fn().mockReturnValue([publicRoom, encryptedRoom]);
+
+        // When we ask whether there are encrypted rooms
+        // Then the answer is no
+        expect(CompleteSecurity.anyEncryptedRooms(client)).toBeFalsy();
+    });
+});

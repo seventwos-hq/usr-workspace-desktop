@@ -1,7 +1,7 @@
 /*
 Copyright 2025 New Vector Ltd.
 
-SPDX-License-Identifier: AGPL-3.0-only
+SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 Please see LICENSE files in the repository root for full details.
 */
 
@@ -24,6 +24,7 @@ export type * from "./api/custom-components";
 export type * from "./api/extras";
 export type * from "./api/auth";
 export type * from "./api/dialog";
+export type * from "./api/x509";
 export type * from "./api/profile";
 export type * from "./api/navigation";
 export type * from "./api/builtins";

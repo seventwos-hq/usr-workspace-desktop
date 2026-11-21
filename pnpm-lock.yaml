@@ -9690,8 +9690,8 @@ packages:
   jju@1.4.0:
     resolution: {integrity: sha512-8wb9Yw966OSxApiCt0K3yNJL8pnNeIv+OEq2YMidz4FKP6nonSRoOXc80iXY4JaN2FC11B9qsNmDsm+ZOfMROA==}
 
-  joi@18.2.9:
-    resolution: {integrity: sha512-2mD929bUVKUhOLQQEVhlf6EZ0Mlo0DeRb5MO7cViR9AXLtBauuccEtB1py9Ocxpo/P7ucnh442iY/iOwrh3IQw==}
+  joi@18.3.2:
+    resolution: {integrity: sha512-iUivApKYw5GpZmq2Sy6El99j7noo8QSUFZlyQtr3HCkosC/b5wKF6/Y3teiHIlaM8WI38sAT3P+51rB0lhAhJA==}
     engines: {node: '>= 20'}
 
   js-tokens@10.0.0:
@@ -19154,7 +19154,7 @@ snapshots:
       '@vueuse/shared': 12.8.2(@typescript/typescript6@6.0.2)
       vue: 3.5.43(@typescript/typescript6@6.0.2)
     optionalDependencies:
-      axios: 1.20.0(supports-color@7.2.0)
+      axios: 1.20.0(debug@4.4.3)(supports-color@7.2.0)
       focus-trap: 7.8.0
       qrcode: 1.5.4
     transitivePeerDependencies:
@@ -19580,7 +19580,7 @@ snapshots:
       - debug
       - supports-color
 
-  axios@1.20.0(supports-color@7.2.0):
+  axios@1.20.0(debug@4.4.3)(supports-color@7.2.0):
     dependencies:
       follow-redirects: 1.16.1(debug@4.4.3)
       form-data: 4.0.6
@@ -21480,6 +21480,12 @@ snapshots:
     dependencies:
       walk-up-path: 4.0.0
 
+  fdir@6.5.0(picomatch@4.0.4):
+    dependencies:
+      '@types/picomatch': 4.0.2
+    optionalDependencies:
+      picomatch: 4.0.4
+
   fdir@6.5.0(picomatch@4.0.7):
     dependencies:
       '@types/picomatch': 4.0.2
@@ -21566,7 +21572,7 @@ snapshots:
 
   follow-redirects@1.16.1(debug@4.4.3):
     optionalDependencies:
-      debug: 4.4.3(supports-color@10.2.2)
+      debug: 4.4.3(supports-color@7.2.0)
 
   for-each@0.3.5:
     dependencies:
@@ -22373,7 +22379,7 @@ snapshots:
 
   jju@1.4.0: {}
 
-  joi@18.2.9:
+  joi@18.3.2:
     dependencies:
       '@hapi/address': 5.1.1
       '@hapi/formula': 3.0.2
@@ -25782,8 +25788,8 @@ snapshots:
 
   tinyglobby@0.2.17:
     dependencies:
-      fdir: 6.5.0(picomatch@4.0.7)
-      picomatch: 4.0.7
+      fdir: 6.5.0(picomatch@4.0.4)
+      picomatch: 4.0.4
 
   tinypool@2.2.0: {}
 
@@ -26397,7 +26403,7 @@ snapshots:
   wait-on@9.5.1(debug@4.4.3)(supports-color@10.2.2):
     dependencies:
       axios: 1.20.0(debug@4.4.3)(supports-color@10.2.2)
-      joi: 18.2.9
+      joi: 18.3.2
       lodash: 4.18.1
       rxjs: 7.8.2
     transitivePeerDependencies:

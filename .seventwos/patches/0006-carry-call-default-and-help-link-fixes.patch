@@ -1,0 +1,70 @@
+diff --git a/apps/web/config.sample.json b/apps/web/config.sample.json
+index 3f8d054bb1..7f19bafbd1 100644
+--- a/apps/web/config.sample.json
++++ b/apps/web/config.sample.json
+@@ -10,15 +10,8 @@
+     "disable_login_language_selector": false,
+     "disable_3pid_login": false,
+     "force_verification": true,
+-    "brand": "Element",
+-    "integrations_ui_url": "https://scalar.vector.im/",
+-    "integrations_rest_url": "https://scalar.vector.im/api",
+-    "integrations_widgets_urls": [
+-        "https://scalar.vector.im/_matrix/integrations/v1",
+-        "https://scalar.vector.im/api",
+-        "https://scalar-staging.vector.im/_matrix/integrations/v1",
+-        "https://scalar-staging.vector.im/api"
+-    ],
++    "brand": "Seventwos Workspace",
++    "integrations_widgets_urls": [],
+     "default_widget_container_height": 280,
+     "default_country_code": "GB",
+     "show_labs_settings": false,
+@@ -34,11 +27,9 @@
+     "setting_defaults": {
+         "breadcrumbs": true
+     },
+-    "jitsi": {
+-        "preferred_domain": "meet.element.io"
+-    },
++    "jitsi": {},
+     "element_call": {
+-        "brand": "Element Call",
++        "brand": "Seventwos Call",
+         "disable": false,
+         "use_exclusively": false
+     }
+diff --git a/apps/web/src/SdkConfig.ts b/apps/web/src/SdkConfig.ts
+index c563dcf540..86e8868a2f 100644
+--- a/apps/web/src/SdkConfig.ts
++++ b/apps/web/src/SdkConfig.ts
+@@ -26,15 +26,11 @@ export const DEFAULTS = {
+     help_url: "https://workspace.seventwos.org/help",
+     help_encryption_url: "https://workspace.seventwos.org/help#encryption",
+     help_key_storage_url: "https://workspace.seventwos.org/help#encryption5",
+-    integrations_ui_url: "https://scalar.vector.im/",
+-    integrations_rest_url: "https://scalar.vector.im/api",
+     show_labs_settings: false,
+     force_verification: true,
+     enable_client_well_known_lookups: true,
+ 
+-    jitsi: {
+-        preferred_domain: "meet.seventwos.org",
+-    },
++    jitsi: {},
+     element_call: {
+         brand: "Seventwos Call",
+     },
+diff --git a/apps/web/src/toasts/SetupEncryptionToast.tsx b/apps/web/src/toasts/SetupEncryptionToast.tsx
+index a6ecce15bd..c725eb4a6f 100644
+--- a/apps/web/src/toasts/SetupEncryptionToast.tsx
++++ b/apps/web/src/toasts/SetupEncryptionToast.tsx
+@@ -133,7 +133,7 @@ const getDescription = (state: DeviceStateForToast): string | React.ReactNode =>
+             return _t("encryption|verify_toast_description", undefined, {
+                 a: (sub) => (
+                     <Link
+-                        href="https://docs.element.io/latest/element-support/device-verification/how-to-verify-devices/"
++                        href="https://workspace.seventwos.org/help#encryption-device-verification"
+                         target="_blank"
+                         size="sm"
+                     >

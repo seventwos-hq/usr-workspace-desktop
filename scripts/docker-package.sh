@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
-set -ex
+set -e
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
-DIR=$(dirname "$0")
+DIR=$(cd "$(dirname "$0")" && pwd)
+ROOT=$(cd "$DIR/.." && pwd)
 
 # If the branch comes out as HEAD then we're probably checked out to a tag, so if the thing is *not*
 # coming out as HEAD then we're on a branch. When we're on a branch, we want to resolve ourselves to
@@ -18,4 +19,7 @@ fi
 
 DIST_VERSION=$("$DIR"/normalize-version.sh "$DIST_VERSION")
 
-VERSION=$DIST_VERSION pnpm --dir apps/web build
+# Apply our reviewed changes to the upstream web app; fails on any patch that does not apply.
+python3 "$DIR"/upstream/apply_patches.py --root "$ROOT"
+
+VERSION="$DIST_VERSION" pnpm --dir "$ROOT/apps/web" build

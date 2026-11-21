@@ -1,0 +1,14 @@
+diff --git a/apps/web/playwright/e2e/crypto/device-verification.spec.ts b/apps/web/playwright/e2e/crypto/device-verification.spec.ts
+index fd87686d48f04f53d0ef6eb1abfa9b976ae89cd4..b21265bd54e4bdebecc1eb38e9be0846f2f55762 100644
+--- a/apps/web/playwright/e2e/crypto/device-verification.spec.ts
++++ b/apps/web/playwright/e2e/crypto/device-verification.spec.ts
+@@ -345,7 +345,8 @@ async function readQrCode(base: Locator) {
+         },
+         void,
+         HTMLImageElement
+-    >(async (img) => {
++    >(async (element) => {
++        const img = element as HTMLImageElement;
+         // draw the image on a canvas
+         const myCanvas = new OffscreenCanvas(img.width, img.height);
+         const ctx = myCanvas.getContext("2d")!;

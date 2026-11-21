@@ -1,5 +1,5 @@
 diff --git a/apps/web/README.md b/apps/web/README.md
-index c4b84a1..9b516e3 100644
+index c4b84a1268d12078f66a4fd17051e69cd9b0f865..9b516e3c89647178b2b50ad382def79aefbf7b11 100644
 --- a/apps/web/README.md
 +++ b/apps/web/README.md
 @@ -70,7 +70,7 @@ guide](https://pnpm.io/installation#using-corepack) if you do not have it alread
@@ -7,74 +7,12 @@ index c4b84a1..9b516e3 100644
        proper development environment (see [Setting up a dev
        environment](../../developer_guide.md#setting-up-a-dev-environment) below). Alternatively, you
 -      can use <https://develop.element.io> - the continuous integration release of
-+      can use <https://develop.seventwos.com> - the continuous integration release of
++      can use <https://develop.seventwos.org> - the continuous integration release of
        the develop branch.
  1. Configure the app by copying `config.sample.json` to `config.json` and
     modifying it. See the [configuration docs](../../docs/config.md) for details.
-diff --git a/apps/web/config.sample.json b/apps/web/config.sample.json
-index 69339ee..17f7685 100644
---- a/apps/web/config.sample.json
-+++ b/apps/web/config.sample.json
-@@ -1,27 +1,17 @@
- {
-     "default_server_config": {
-         "m.homeserver": {
--            "base_url": "https://matrix-client.matrix.org",
--            "server_name": "matrix.org"
--        },
--        "m.identity_server": {
--            "base_url": "https://vector.im"
-+            "base_url": "https://workspace.seventwos.com",
-+            "server_name": "workspace.seventwos.com"
-         }
-     },
-     "disable_custom_urls": false,
-     "disable_guests": false,
-     "disable_login_language_selector": false,
-     "disable_3pid_login": false,
--    "force_verification": true,
--    "brand": "Element",
--    "integrations_ui_url": "https://scalar.vector.im/",
--    "integrations_rest_url": "https://scalar.vector.im/api",
--    "integrations_widgets_urls": [
--        "https://scalar.vector.im/_matrix/integrations/v1",
--        "https://scalar.vector.im/api",
--        "https://scalar-staging.vector.im/_matrix/integrations/v1",
--        "https://scalar-staging.vector.im/api"
--    ],
-+    "force_verification": false,
-+    "brand": "Seventwos Workspace",
-+    "integrations_widgets_urls": [],
-     "default_widget_container_height": 280,
-     "default_country_code": "GB",
-     "show_labs_settings": false,
-@@ -29,20 +19,17 @@
-     "default_federate": true,
-     "default_theme": "light",
-     "room_directory": {
--        "servers": ["matrix.org"]
-+        "servers": ["workspace.seventwos.com"]
-     },
-     "enable_presence_by_hs_url": {
--        "https://matrix.org": false,
--        "https://matrix-client.matrix.org": false
-+        "https://workspace.seventwos.com": false
-     },
-     "setting_defaults": {
-         "breadcrumbs": true
-     },
--    "jitsi": {
--        "preferred_domain": "meet.element.io"
--    },
-+    "jitsi": {},
-     "element_call": {
--        "brand": "Element Call",
-+        "brand": "Seventwos Call",
-         "disable": false,
-         "use_exclusively": false
-     }
 diff --git a/apps/web/package.json b/apps/web/package.json
-index f0f645b..b57c625 100644
+index f0f645b56d4b99d3253e5029514f5ac5368b7e0a..8ad8eec8db41b1c310ae84e9b19db4d550644135 100644
 --- a/apps/web/package.json
 +++ b/apps/web/package.json
 @@ -21,7 +21,7 @@
@@ -82,26 +20,12 @@ index f0f645b..b57c625 100644
          "build-stats": "nx build --json=webpack-stats.json",
          "vendor:modernizr": "modernizr -c .modernizr.json -d src/vector/modernizr.js && mv src/vector/modernizr.js src/vector/modernizr.cjs",
 -        "vendor:jitsi": "curl -s https://meet.element.io/libs/external_api.min.js > ./res/jitsi_external_api.min.js",
-+        "vendor:jitsi": "curl -s https://meet.jit.si/libs/external_api.min.js > ./res/jitsi_external_api.min.js",
++        "vendor:jitsi": "curl -s https://meet.seventwos.org/libs/external_api.min.js > ./res/jitsi_external_api.min.js",
          "dist": "./scripts/package.sh",
          "start": "nx start",
          "lint": "pnpm lint:types && pnpm lint:style",
-diff --git a/apps/web/playwright/e2e/crypto/device-verification.spec.ts b/apps/web/playwright/e2e/crypto/device-verification.spec.ts
-index fd87686..b21265b 100644
---- a/apps/web/playwright/e2e/crypto/device-verification.spec.ts
-+++ b/apps/web/playwright/e2e/crypto/device-verification.spec.ts
-@@ -345,7 +345,8 @@ async function readQrCode(base: Locator) {
-         },
-         void,
-         HTMLImageElement
--    >(async (img) => {
-+    >(async (element) => {
-+        const img = element as HTMLImageElement;
-         // draw the image on a canvas
-         const myCanvas = new OffscreenCanvas(img.width, img.height);
-         const ctx = myCanvas.getContext("2d")!;
 diff --git a/apps/web/res/manifest.json b/apps/web/res/manifest.json
-index ff9b8ed..5399f7c 100644
+index ff9b8edf303f8c4f8bc2241d54fb548e0a58e810..5399f7c0a0a538772cb68e4a560aff15fc8fb444 100644
 --- a/apps/web/res/manifest.json
 +++ b/apps/web/res/manifest.json
 @@ -1,6 +1,6 @@
@@ -114,10 +38,10 @@ index ff9b8ed..5399f7c 100644
      "theme_color": "#76CFA6",
      "start_url": "index.html",
 diff --git a/apps/web/src/SdkConfig.ts b/apps/web/src/SdkConfig.ts
-index d5334e3..061339e 100644
+index d5334e3ab1a22dc343496a6c6907ebd3d8e6d06f..37ed00e0c0ec32dd6d659bbb085a4eb61fc48e5a 100644
 --- a/apps/web/src/SdkConfig.ts
 +++ b/apps/web/src/SdkConfig.ts
-@@ -17,26 +17,22 @@ import ElementDesktopLogoSvg from "../res/img/element-desktop-logo.svg";
+@@ -17,15 +17,15 @@ import ElementDesktopLogoSvg from "../res/img/element-desktop-logo.svg";
  
  // see element-web config.md for docs, or the IConfigOptions interface for dev docs
  export const DEFAULTS = {
@@ -125,48 +49,42 @@ index d5334e3..061339e 100644
 +    brand: "Seventwos Workspace",
      branding: {
 -        logo_link_url: "https://element.io",
-+        logo_link_url: "https://seventwos.com/",
++        logo_link_url: "https://workspace.seventwos.org",
          auth_header_logo_url: "themes/element/img/logos/element-logo.svg",
          welcome_background_url: "themes/element/img/backgrounds/lake.jpg",
      },
 -    help_url: "https://element.io/help",
 -    help_encryption_url: "https://element.io/help#encryption",
 -    help_key_storage_url: "https://element.io/help#encryption5",
--    integrations_ui_url: "https://scalar.vector.im/",
--    integrations_rest_url: "https://scalar.vector.im/api",
-+    help_url: "https://seventwos.com/",
-+    help_encryption_url: "https://seventwos.com/",
-+    help_key_storage_url: "https://seventwos.com/",
++    help_url: "https://workspace.seventwos.org/help",
++    help_encryption_url: "https://workspace.seventwos.org/help#encryption",
++    help_key_storage_url: "https://workspace.seventwos.org/help#encryption5",
+     integrations_ui_url: "https://scalar.vector.im/",
+     integrations_rest_url: "https://scalar.vector.im/api",
      show_labs_settings: false,
-     force_verification: true,
+@@ -33,10 +33,10 @@ export const DEFAULTS = {
      enable_client_well_known_lookups: true,
  
--    jitsi: {
+     jitsi: {
 -        preferred_domain: "meet.element.io",
--    },
-+    jitsi: {},
++        preferred_domain: "meet.seventwos.org",
+     },
      element_call: {
 -        brand: "Element Call",
 +        brand: "Seventwos Call",
      },
  
      // @ts-ignore - we deliberately use the camelCase version here so we trigger
-@@ -46,23 +42,23 @@ export const DEFAULTS = {
+@@ -46,7 +46,7 @@ export const DEFAULTS = {
      desktopBuilds: {
          available: true,
          logo: ElementDesktopLogoSvg,
 -        url: "https://element.io/get-started",
-+        url: "https://seventwos.com/",
++        url: "https://workspace.seventwos.org/get-started",
      },
  
      feedback: {
-         existing_issues_url:
--            "https://github.com/vector-im/element-web/issues?q=is%3Aopen+is%3Aissue+sort%3Areactions-%2B1-desc",
--        new_issue_url: "https://github.com/vector-im/element-web/issues/new/choose",
-+            "https://seventwos.com/",
-+        new_issue_url: "https://seventwos.com/",
-     },
- 
+@@ -58,11 +58,11 @@ export const DEFAULTS = {
      desktop_builds: {
          available: true,
          logo: "vector-icons/1024.png",
@@ -175,16 +93,16 @@ index d5334e3..061339e 100644
 -        url_win64: "https://packages.element.io/desktop/install/win32/x64/Element%20Setup.exe",
 -        url_win64arm: "https://packages.element.io/desktop/install/win32/arm64/Element%20Setup.exe",
 -        url_linux: "https://element.io/download#linux",
-+        url: "https://seventwos.com/",
-+        url_macos: "https://seventwos.com/",
-+        url_win64: "https://seventwos.com/",
-+        url_win64arm: "https://seventwos.com/",
-+        url_linux: "https://seventwos.com/",
++        url: "https://workspace.seventwos.org/download",
++        url_macos: "https://workspace.seventwos.org/download",
++        url_win64: "https://workspace.seventwos.org/download",
++        url_win64arm: "https://workspace.seventwos.org/download",
++        url_linux: "https://workspace.seventwos.org/download#linux",
      },
      mobile_builds: {
          ios: "https://apps.apple.com/app/vector/id1083446067",
 diff --git a/apps/web/src/components/structures/auth/SetupEncryptionBody.tsx b/apps/web/src/components/structures/auth/SetupEncryptionBody.tsx
-index 67d9f0e..9a11072 100644
+index 67d9f0e85fa26eecdc8c54c728579de63ad75c63..45139a9839b74760c59e93694cf3a56ecd2206d1 100644
 --- a/apps/web/src/components/structures/auth/SetupEncryptionBody.tsx
 +++ b/apps/web/src/components/structures/auth/SetupEncryptionBody.tsx
 @@ -248,7 +248,7 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
@@ -192,43 +110,25 @@ index 67d9f0e..9a11072 100644
                          <span>{_t("encryption|verification|confirm_identity_description")}</span>
                          <span>
 -                            <ExternalLink href="https://element.io/help#encryption-device-verification">
-+                            <ExternalLink href="https://seventwos.com/">
++                            <ExternalLink href="https://workspace.seventwos.org/help#encryption-device-verification">
                                  {_t("action|learn_more")}
                              </ExternalLink>
                          </span>
 diff --git a/apps/web/src/components/views/auth/AuthFooter.tsx b/apps/web/src/components/views/auth/AuthFooter.tsx
-index 1942bf0..2850690 100644
+index 1942bf04318304c23795cc99e4f64277f78e6794..c3c14357fd5d1c56da22a4a5716b2c585d063e4e 100644
 --- a/apps/web/src/components/views/auth/AuthFooter.tsx
 +++ b/apps/web/src/components/views/auth/AuthFooter.tsx
-@@ -10,15 +10,10 @@ Please see LICENSE files in the repository root for full details.
- import React, { type JSX, type ReactElement } from "react";
- 
- import SdkConfig from "../../../SdkConfig";
--import { _t } from "../../../languageHandler";
- 
+@@ -15,7 +15,7 @@ import { _t } from "../../../languageHandler";
  const AuthFooter = (): ReactElement => {
      const brandingConfig = SdkConfig.getObject("branding");
--    const links = brandingConfig?.get("auth_footer_links") ?? [
+     const links = brandingConfig?.get("auth_footer_links") ?? [
 -        { text: "Blog", url: "https://element.io/blog" },
--        { text: "Mastodon", url: "https://mastodon.matrix.org/@Element" },
--        { text: "GitHub", url: "https://github.com/element-hq/element-web" },
--    ];
-+    const links = brandingConfig?.get("auth_footer_links") ?? [];
- 
-     const authFooterLinks: JSX.Element[] = [];
-     for (const linkEntry of links) {
-@@ -32,9 +27,6 @@ const AuthFooter = (): ReactElement => {
-     return (
-         <footer className="mx_AuthFooter" role="contentinfo">
-             {authFooterLinks}
--            <a href="https://matrix.org" target="_blank" rel="noreferrer noopener">
--                {_t("powered_by_matrix")}
--            </a>
-         </footer>
-     );
- };
++        { text: "Blog", url: "https://workspace.seventwos.org/blog" },
+         { text: "Mastodon", url: "https://mastodon.matrix.org/@Element" },
+         { text: "GitHub", url: "https://github.com/element-hq/element-web" },
+     ];
 diff --git a/apps/web/src/components/views/dialogs/LogoutDialog.tsx b/apps/web/src/components/views/dialogs/LogoutDialog.tsx
-index 211a700..7b49b3a 100644
+index 211a700d5c6ece475f1ebeda9bf8c2c390e8003c..36562e6a8d9a3cdd7a431f087ee51afa50755733 100644
 --- a/apps/web/src/components/views/dialogs/LogoutDialog.tsx
 +++ b/apps/web/src/components/views/dialogs/LogoutDialog.tsx
 @@ -207,7 +207,7 @@ export default function LogoutDialog(props: IProps): JSX.Element {
@@ -236,12 +136,12 @@ index 211a700..7b49b3a 100644
                          <EncryptionCardEmphasisedContent>
                              <Text>{_t("auth|logout_dialog|setup_secure_backup_description")}</Text>
 -                            <Text as="a" target="_blank" href="https://element.io/en/help#encryption16">
-+                            <Text as="a" target="_blank" href="https://seventwos.com/">
++                            <Text as="a" target="_blank" href="https://workspace.seventwos.org/help#encryption16">
                                  {_t("action|learn_more")} <PopOutIcon />
                              </Text>
                          </EncryptionCardEmphasisedContent>
 diff --git a/apps/web/src/components/views/rooms/UserIdentityWarning.tsx b/apps/web/src/components/views/rooms/UserIdentityWarning.tsx
-index 4e74360..0b8b44a 100644
+index 4e743606cd476a7640b548a629c4a1f709b3a0b6..b670e0fd89f363beeebe14b90dedb1bda43c0cbd 100644
 --- a/apps/web/src/components/views/rooms/UserIdentityWarning.tsx
 +++ b/apps/web/src/components/views/rooms/UserIdentityWarning.tsx
 @@ -135,7 +135,7 @@ function memberAvatar(member: RoomMember): React.ReactNode {
@@ -249,12 +149,12 @@ index 4e74360..0b8b44a 100644
  function substituteATag(sub: string): React.ReactNode {
      return (
 -        <a href="https://element.io/help#encryption18" target="_blank" rel="noreferrer noopener">
-+        <a href="https://seventwos.com/" target="_blank" rel="noreferrer noopener">
++        <a href="https://workspace.seventwos.org/help#encryption18" target="_blank" rel="noreferrer noopener">
              {sub}
          </a>
      );
 diff --git a/apps/web/src/components/views/settings/notifications/NotificationSettings2.tsx b/apps/web/src/components/views/settings/notifications/NotificationSettings2.tsx
-index 7d22f99..4214f26 100644
+index 7d22f99b3adcc4060b3d24002a67d5be9c1b5198..3820a5941b87a2fb8671606b84b741179cc1ba67 100644
 --- a/apps/web/src/components/views/settings/notifications/NotificationSettings2.tsx
 +++ b/apps/web/src/components/views/settings/notifications/NotificationSettings2.tsx
 @@ -56,7 +56,7 @@ function boldText(text: string): JSX.Element {
@@ -262,12 +162,12 @@ index 7d22f99..4214f26 100644
  
  function helpLink(sub: string): JSX.Element {
 -    return <ExternalLink href="https://element.io/help#settings2">{sub}</ExternalLink>;
-+    return <ExternalLink href="https://seventwos.com/">{sub}</ExternalLink>;
++    return <ExternalLink href="https://workspace.seventwos.org/help#settings2">{sub}</ExternalLink>;
  }
  
  function useHasUnreadNotifications(): boolean {
 diff --git a/apps/web/src/components/views/settings/tabs/room/SecurityRoomSettingsTab.tsx b/apps/web/src/components/views/settings/tabs/room/SecurityRoomSettingsTab.tsx
-index 0c6f6a0..e52108a 100644
+index 0c6f6a03a7a36bc958c70623dd0e6590a3d4f0e6..8c27dd5d492f704998e7a7e3cb563310df36484b 100644
 --- a/apps/web/src/components/views/settings/tabs/room/SecurityRoomSettingsTab.tsx
 +++ b/apps/web/src/components/views/settings/tabs/room/SecurityRoomSettingsTab.tsx
 @@ -468,7 +468,7 @@ export default class SecurityRoomSettingsTab extends React.Component<IProps, ISt
@@ -275,12 +175,12 @@ index 0c6f6a0..e52108a 100644
                      {
                          a: (sub) => (
 -                            <ExternalLink href="https://element.io/en/help#e2ee-history-sharing">{sub}</ExternalLink>
-+                            <ExternalLink href="https://seventwos.com/">{sub}</ExternalLink>
++                            <ExternalLink href="https://workspace.seventwos.org/help#e2ee-history-sharing">{sub}</ExternalLink>
                          ),
                      },
                  )}
 diff --git a/apps/web/src/stores/widgets/WidgetMessaging.ts b/apps/web/src/stores/widgets/WidgetMessaging.ts
-index ea75839..f66a097 100644
+index ea75839a3f99bc360ea082fe39b96dd254825444..c7e9c95df6a6fb7b827d2539519b22ac776a23ae 100644
 --- a/apps/web/src/stores/widgets/WidgetMessaging.ts
 +++ b/apps/web/src/stores/widgets/WidgetMessaging.ts
 @@ -99,8 +99,8 @@ export class ElementWidget extends Widget {
@@ -289,26 +189,13 @@ index ea75839..f66a097 100644
          if (domain === undefined) {
 -            // v1 widgets default to meet.element.io regardless of user settings
 -            domain = "meet.element.io";
-+            // no default Jitsi domain is shipped
-+            domain = "";
++            // v1 widgets default to meet.seventwos.org regardless of user settings
++            domain = "meet.seventwos.org";
          }
  
          let theme = new ThemeWatcher().getEffectiveTheme();
-diff --git a/apps/web/src/toasts/SetupEncryptionToast.tsx b/apps/web/src/toasts/SetupEncryptionToast.tsx
-index a6ecce1..ff88b74 100644
---- a/apps/web/src/toasts/SetupEncryptionToast.tsx
-+++ b/apps/web/src/toasts/SetupEncryptionToast.tsx
-@@ -133,7 +133,7 @@ const getDescription = (state: DeviceStateForToast): string | React.ReactNode =>
-             return _t("encryption|verify_toast_description", undefined, {
-                 a: (sub) => (
-                     <Link
--                        href="https://docs.element.io/latest/element-support/device-verification/how-to-verify-devices/"
-+                        href="https://seventwos.com/"
-                         target="_blank"
-                         size="sm"
-                     >
 diff --git a/apps/web/src/vector/mobile_guide/index.html b/apps/web/src/vector/mobile_guide/index.html
-index 3bd8a8e..db7e11d 100644
+index 3bd8a8e20d426d0b0a0948bc9654fd44c96c2151..db7e11d87c29aaee0d9502574650e9860c558245 100644
 --- a/apps/web/src/vector/mobile_guide/index.html
 +++ b/apps/web/src/vector/mobile_guide/index.html
 @@ -1,6 +1,6 @@
@@ -320,7 +207,7 @@ index 3bd8a8e..db7e11d 100644
  -->
  <html lang="en">
 diff --git a/apps/web/src/vector/mobile_guide/index.ts b/apps/web/src/vector/mobile_guide/index.ts
-index b8cb06a..7a5123b 100644
+index b8cb06afdf628281f42d607f0022913524b4550a..368f2d1513c9b703b9af36df0ac6e9b77b6c8c8a 100644
 --- a/apps/web/src/vector/mobile_guide/index.ts
 +++ b/apps/web/src/vector/mobile_guide/index.ts
 @@ -116,7 +116,7 @@ async function initPage(): Promise<void> {
@@ -328,7 +215,7 @@ index b8cb06a..7a5123b 100644
      if (isUrl && !isUrl.endsWith("/")) isUrl += "/";
  
 -    let deepLinkUrl = `https://mobile.element.io${metadata.deepLinkPath}`;
-+    let deepLinkUrl = `https://seventwos.com${metadata.deepLinkPath}`;
++    let deepLinkUrl = `https://workspace.seventwos.org/mobile${metadata.deepLinkPath}`;
  
      if (metadata.usesLegacyDeepLink) {
          deepLinkUrl += `?hs_url=${encodeURIComponent(hsUrl)}`;
@@ -342,7 +229,7 @@ index b8cb06a..7a5123b 100644
  
      updateMobilePage(metadata, deepLinkUrl, serverName ?? hsUrl);
 diff --git a/apps/web/src/vector/mobile_guide/mobile-apps.ts b/apps/web/src/vector/mobile_guide/mobile-apps.ts
-index 5d6f884..9ede0b9 100644
+index 5d6f88439c631ccb78733065b3f4c4eb52416f63..45a1d63df32b80cee93e2d44d3a7216aafbc456c 100644
 --- a/apps/web/src/vector/mobile_guide/mobile-apps.ts
 +++ b/apps/web/src/vector/mobile_guide/mobile-apps.ts
 @@ -6,7 +6,7 @@ Please see LICENSE files in the repository root for full details.
@@ -350,7 +237,7 @@ index 5d6f884..9ede0b9 100644
  
  /*
 - * Shared code that is used by the mobile guide and the mobile.element.io site.
-+ * Shared code that is used by the mobile guide and the Seventwos mobile site.
++ * Shared code that is used by the mobile guide and the the Seventwos mobile site site.
   */
  
  export enum MobileAppVariant {
@@ -364,7 +251,7 @@ index 5d6f884..9ede0b9 100644
          document.getElementById("step2_container")!.style.display = "block";
          if (metadata.isProApp) {
 diff --git a/apps/web/src/vector/platform/ElectronPlatform.tsx b/apps/web/src/vector/platform/ElectronPlatform.tsx
-index 01a50f0..90eb185 100644
+index 01a50f015fa470ae7de6414a09d84e87942cf45d..a5874a68fccff292ae7573ca8faadd0c3aecf58c 100644
 --- a/apps/web/src/vector/platform/ElectronPlatform.tsx
 +++ b/apps/web/src/vector/platform/ElectronPlatform.tsx
 @@ -532,12 +532,12 @@ export default class ElectronPlatform extends BasePlatform {
@@ -372,19 +259,19 @@ index 01a50f0..90eb185 100644
      public get baseUrl(): string {
          // This configuration is element-desktop specific so the types here do not know about it
 -        return (SdkConfig.get() as unknown as Record<string, string>)["web_base_url"] ?? "https://app.element.io";
-+        return (SdkConfig.get() as unknown as Record<string, string>)["web_base_url"] ?? "https://seventwos.com";
++        return (SdkConfig.get() as unknown as Record<string, string>)["web_base_url"] ?? "https://workspace.seventwos.org";
      }
  
      public get defaultOAuthClientUri(): string {
 -        // Default to element.io as our scheme `io.element.desktop` is within its scope on default MAS policies
 -        return "https://element.io";
 +        // Default to Seventwos Workspace as our scheme `io.element.desktop` is within its scope on default MAS policies
-+        return "https://seventwos.com";
++        return "https://workspace.seventwos.org";
      }
  
      public async getOAuthClientMetadata(): Promise<OAuthRegistrationRequest> {
 diff --git a/apps/web/src/vector/platform/WebPlatform.ts b/apps/web/src/vector/platform/WebPlatform.ts
-index f1bea8d..23306a9 100644
+index f1bea8dcc96f1d1225e989e20e14b66dad85671b..23306a9b9dd09a84dc56951f2f823e21325d4b22 100644
 --- a/apps/web/src/vector/platform/WebPlatform.ts
 +++ b/apps/web/src/vector/platform/WebPlatform.ts
 @@ -265,7 +265,7 @@ export default class WebPlatform extends BasePlatform {
@@ -392,12 +279,12 @@ index f1bea8d..23306a9 100644
          const url = new URL(window.location.href);
  
 -        // `appName` in the format `develop.element.io/abc/xyz`
-+        // `appName` in the format `develop.seventwos.com/abc/xyz`
++        // `appName` in the format `develop.seventwos.org/abc/xyz`
          const appName = [
              url.host,
              url.pathname.replace(/\/$/, ""), // Remove trailing slash if present
 diff --git a/apps/web/src/vector/static/incompatible-browser.html b/apps/web/src/vector/static/incompatible-browser.html
-index 6515b82..10c4654 100644
+index 6515b82eea85720ad1cedbb91f127abace05b515..38891dc17b53b9b1e80b4f2df8c7d200420a9684 100644
 --- a/apps/web/src/vector/static/incompatible-browser.html
 +++ b/apps/web/src/vector/static/incompatible-browser.html
 @@ -769,7 +769,7 @@
@@ -405,12 +292,12 @@ index 6515b82..10c4654 100644
          <div class="mx_HomePage_row mx_Center mx_Spacer">
              <p class="mx_Spacer">
 -                <a href="https://element.io" target="_blank" class="mx_FooterLink"> Go to element.io </a>
-+                <a href="https://seventwos.com/" target="_blank" class="mx_FooterLink"> Go to Seventwos Workspace </a>
++                <a href="https://workspace.seventwos.org" target="_blank" class="mx_FooterLink"> Go to Seventwos Workspace </a>
              </p>
          </div>
      </div>
 diff --git a/apps/web/src/vector/static/unable-to-load.html b/apps/web/src/vector/static/unable-to-load.html
-index 0c79bd8..1c8012f 100644
+index 0c79bd8969693de8aef92640c88927cc140ae3bd..a1ffbc89f2293989523b1612e87cc4296eafcd2d 100644
 --- a/apps/web/src/vector/static/unable-to-load.html
 +++ b/apps/web/src/vector/static/unable-to-load.html
 @@ -188,7 +188,7 @@
@@ -418,12 +305,12 @@ index 0c79bd8..1c8012f 100644
          <div class="mx_HomePage_row mx_Center mx_Spacer">
              <p class="mx_Spacer">
 -                <a href="https://element.io" target="_blank" class="mx_FooterLink"> Go to element.io </a>
-+                <a href="https://seventwos.com/" target="_blank" class="mx_FooterLink"> Go to Seventwos Workspace </a>
++                <a href="https://workspace.seventwos.org" target="_blank" class="mx_FooterLink"> Go to Seventwos Workspace </a>
              </p>
          </div>
      </div>
 diff --git a/apps/web/src/widgets/Jitsi.ts b/apps/web/src/widgets/Jitsi.ts
-index 9537322..3618136 100644
+index 953732255e6fe867e247d1e174abdeaa21ce5def..4700c94f56e038ae7204cd7f086942cec822eb2f 100644
 --- a/apps/web/src/widgets/Jitsi.ts
 +++ b/apps/web/src/widgets/Jitsi.ts
 @@ -28,7 +28,7 @@ export class Jitsi {
@@ -431,7 +318,7 @@ index 9537322..3618136 100644
  
      public get preferredDomain(): string {
 -        return this.domain || "meet.element.io";
-+        return this.domain || "";
++        return this.domain || "meet.seventwos.org";
      }
  
      public get useFor1To1Calls(): boolean {
@@ -440,12 +327,12 @@ index 9537322..3618136 100644
      private update = async (discoveryResponse?: IClientWellKnown): Promise<any> => {
          // Start with a default of the config's domain
 -        let domain = SdkConfig.getObject("jitsi")?.get("preferred_domain") || "meet.element.io";
-+        let domain = SdkConfig.getObject("jitsi")?.get("preferred_domain") || "";
++        let domain = SdkConfig.getObject("jitsi")?.get("preferred_domain") || "meet.seventwos.org";
  
          logger.log("Attempting to get Jitsi conference information from homeserver");
          const wkJitsiConfig = discoveryResponse?.[JITSI_WK_PROPERTY] ?? discoveryResponse?.[JITSI_WK_PROPERTY_LEGACY];
 diff --git a/apps/web/webpack.config.ts b/apps/web/webpack.config.ts
-index 7fb270b..9034c75 100644
+index 7fb270b49036d10de607af45b9d66def2fec7244..ca4fbc409f51e24fe5646a460e916792b0286520 100644
 --- a/apps/web/webpack.config.ts
 +++ b/apps/web/webpack.config.ts
 @@ -33,7 +33,7 @@ import type { sentryWebpackPlugin as sentryWebpackPluginType } from "@sentry/web
@@ -453,7 +340,7 @@ index 7fb270b..9034c75 100644
  // RIOT_OG_IMAGE_URL: specifies the URL to the image which should be used for the opengraph logo.
  // CSP_EXTRA_SOURCE: specifies a URL which should be appended to each CSP directive which uses 'self',
 -//   this can be helpful if your deployment has redirects for old bundles, such as develop.element.io.
-+//   this can be helpful if your deployment has redirects for old bundles, such as develop.seventwos.com.
++//   this can be helpful if your deployment has redirects for old bundles, such as develop.seventwos.org.
  
  let sentryWebpackPlugin: typeof sentryWebpackPluginType | undefined;
  // This plugin throws an error on import on some platforms like ppc64le & s390x even if the plugin isn't called,
@@ -462,7 +349,7 @@ index 7fb270b..9034c75 100644
  dotenv.config();
  let ogImageUrl = process.env.RIOT_OG_IMAGE_URL;
 -if (!ogImageUrl) ogImageUrl = "https://app.element.io/themes/element/img/logos/opengraph.png";
-+if (!ogImageUrl) ogImageUrl = "https://seventwos.com/_corp/images/og-seventwos-social.jpg";
++if (!ogImageUrl) ogImageUrl = "https://workspace.seventwos.org/themes/element/img/logos/opengraph.png";
  
  const cssThemes = {
      // CSS themes
@@ -471,12 +358,12 @@ index 7fb270b..9034c75 100644
      //
      // argv.mode is always set to "production" by pnpm build
 -    //      (called to build prod, nightly and develop.element.io)
-+    //      (called to build prod, nightly and develop.seventwos.com)
++    //      (called to build prod, nightly and develop.seventwos.org)
      // arg.mode is set to "development" by pnpm start
      //      (called by developers, runs the continuous reload script)
      // process.env.CI_PACKAGE is set when pnpm build is called from scripts/ci_package.sh
 -    //      (called to build nightly and develop.element.io)
-+    //      (called to build nightly and develop.seventwos.com)
++    //      (called to build nightly and develop.seventwos.org)
      const nodeEnv = argv.mode;
      const devMode = nodeEnv !== "production";
      const enableMinification = !devMode && !process.env.CI_PACKAGE;

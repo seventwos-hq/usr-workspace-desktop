@@ -1,0 +1,170 @@
+diff --git a/apps/web/src/SdkConfig.ts b/apps/web/src/SdkConfig.ts
+index 37ed00e0c0ec32dd6d659bbb085a4eb61fc48e5a..e77c7af9ebcca3225f3d6bac659cc86246fb2219 100644
+--- a/apps/web/src/SdkConfig.ts
++++ b/apps/web/src/SdkConfig.ts
+@@ -46,7 +46,7 @@ export const DEFAULTS = {
+     desktopBuilds: {
+         available: true,
+         logo: ElementDesktopLogoSvg,
+-        url: "https://workspace.seventwos.org/get-started",
++        url: "https://seventwos.com/",
+     },
+ 
+     feedback: {
+@@ -58,11 +58,11 @@ export const DEFAULTS = {
+     desktop_builds: {
+         available: true,
+         logo: "vector-icons/1024.png",
+-        url: "https://workspace.seventwos.org/download",
+-        url_macos: "https://workspace.seventwos.org/download",
+-        url_win64: "https://workspace.seventwos.org/download",
+-        url_win64arm: "https://workspace.seventwos.org/download",
+-        url_linux: "https://workspace.seventwos.org/download#linux",
++        url: "https://seventwos.com/",
++        url_macos: "https://seventwos.com/",
++        url_win64: "https://seventwos.com/",
++        url_win64arm: "https://seventwos.com/",
++        url_linux: "https://seventwos.com/",
+     },
+     mobile_builds: {
+         ios: "https://apps.apple.com/app/vector/id1083446067",
+diff --git a/apps/web/src/components/structures/auth/SetupEncryptionBody.tsx b/apps/web/src/components/structures/auth/SetupEncryptionBody.tsx
+index 45139a9839b74760c59e93694cf3a56ecd2206d1..9a11072150b4e6558cb25bf392b01dce6290dc48 100644
+--- a/apps/web/src/components/structures/auth/SetupEncryptionBody.tsx
++++ b/apps/web/src/components/structures/auth/SetupEncryptionBody.tsx
+@@ -248,7 +248,7 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
+                     <EncryptionCardEmphasisedContent>
+                         <span>{_t("encryption|verification|confirm_identity_description")}</span>
+                         <span>
+-                            <ExternalLink href="https://workspace.seventwos.org/help#encryption-device-verification">
++                            <ExternalLink href="https://seventwos.com/">
+                                 {_t("action|learn_more")}
+                             </ExternalLink>
+                         </span>
+diff --git a/apps/web/src/components/views/auth/AuthFooter.tsx b/apps/web/src/components/views/auth/AuthFooter.tsx
+index c3c14357fd5d1c56da22a4a5716b2c585d063e4e..07abe145b1314940b188312f724eba9b33376b12 100644
+--- a/apps/web/src/components/views/auth/AuthFooter.tsx
++++ b/apps/web/src/components/views/auth/AuthFooter.tsx
+@@ -15,7 +15,6 @@ import { _t } from "../../../languageHandler";
+ const AuthFooter = (): ReactElement => {
+     const brandingConfig = SdkConfig.getObject("branding");
+     const links = brandingConfig?.get("auth_footer_links") ?? [
+-        { text: "Blog", url: "https://workspace.seventwos.org/blog" },
+         { text: "Mastodon", url: "https://mastodon.matrix.org/@Element" },
+         { text: "GitHub", url: "https://github.com/element-hq/element-web" },
+     ];
+diff --git a/apps/web/src/components/views/dialogs/LogoutDialog.tsx b/apps/web/src/components/views/dialogs/LogoutDialog.tsx
+index 36562e6a8d9a3cdd7a431f087ee51afa50755733..7b49b3ac31f6e0d10287aee7b722bd6c860dfd17 100644
+--- a/apps/web/src/components/views/dialogs/LogoutDialog.tsx
++++ b/apps/web/src/components/views/dialogs/LogoutDialog.tsx
+@@ -207,7 +207,7 @@ export default function LogoutDialog(props: IProps): JSX.Element {
+                     >
+                         <EncryptionCardEmphasisedContent>
+                             <Text>{_t("auth|logout_dialog|setup_secure_backup_description")}</Text>
+-                            <Text as="a" target="_blank" href="https://workspace.seventwos.org/help#encryption16">
++                            <Text as="a" target="_blank" href="https://seventwos.com/">
+                                 {_t("action|learn_more")} <PopOutIcon />
+                             </Text>
+                         </EncryptionCardEmphasisedContent>
+diff --git a/apps/web/src/components/views/rooms/UserIdentityWarning.tsx b/apps/web/src/components/views/rooms/UserIdentityWarning.tsx
+index b670e0fd89f363beeebe14b90dedb1bda43c0cbd..0b8b44ae118bf03c223225003ec37d5f778027b5 100644
+--- a/apps/web/src/components/views/rooms/UserIdentityWarning.tsx
++++ b/apps/web/src/components/views/rooms/UserIdentityWarning.tsx
+@@ -135,7 +135,7 @@ function memberAvatar(member: RoomMember): React.ReactNode {
+ 
+ function substituteATag(sub: string): React.ReactNode {
+     return (
+-        <a href="https://workspace.seventwos.org/help#encryption18" target="_blank" rel="noreferrer noopener">
++        <a href="https://seventwos.com/" target="_blank" rel="noreferrer noopener">
+             {sub}
+         </a>
+     );
+diff --git a/apps/web/src/components/views/settings/notifications/NotificationSettings2.tsx b/apps/web/src/components/views/settings/notifications/NotificationSettings2.tsx
+index 3820a5941b87a2fb8671606b84b741179cc1ba67..4214f2688f9fd919f157a08f154e806ccb9829cd 100644
+--- a/apps/web/src/components/views/settings/notifications/NotificationSettings2.tsx
++++ b/apps/web/src/components/views/settings/notifications/NotificationSettings2.tsx
+@@ -56,7 +56,7 @@ function boldText(text: string): JSX.Element {
+ }
+ 
+ function helpLink(sub: string): JSX.Element {
+-    return <ExternalLink href="https://workspace.seventwos.org/help#settings2">{sub}</ExternalLink>;
++    return <ExternalLink href="https://seventwos.com/">{sub}</ExternalLink>;
+ }
+ 
+ function useHasUnreadNotifications(): boolean {
+diff --git a/apps/web/src/components/views/settings/tabs/room/SecurityRoomSettingsTab.tsx b/apps/web/src/components/views/settings/tabs/room/SecurityRoomSettingsTab.tsx
+index 8c27dd5d492f704998e7a7e3cb563310df36484b..e52108a722d48f6d35b115bb19cd747505c0c8b8 100644
+--- a/apps/web/src/components/views/settings/tabs/room/SecurityRoomSettingsTab.tsx
++++ b/apps/web/src/components/views/settings/tabs/room/SecurityRoomSettingsTab.tsx
+@@ -468,7 +468,7 @@ export default class SecurityRoomSettingsTab extends React.Component<IProps, ISt
+                     {},
+                     {
+                         a: (sub) => (
+-                            <ExternalLink href="https://workspace.seventwos.org/help#e2ee-history-sharing">{sub}</ExternalLink>
++                            <ExternalLink href="https://seventwos.com/">{sub}</ExternalLink>
+                         ),
+                     },
+                 )}
+diff --git a/apps/web/src/stores/widgets/WidgetMessaging.ts b/apps/web/src/stores/widgets/WidgetMessaging.ts
+index c7e9c95df6a6fb7b827d2539519b22ac776a23ae..f66a097750a7a3f18d1363733db813d046c36ea8 100644
+--- a/apps/web/src/stores/widgets/WidgetMessaging.ts
++++ b/apps/web/src/stores/widgets/WidgetMessaging.ts
+@@ -99,8 +99,8 @@ export class ElementWidget extends Widget {
+         }
+         let domain = super.rawData["domain"];
+         if (domain === undefined) {
+-            // v1 widgets default to meet.seventwos.org regardless of user settings
+-            domain = "meet.seventwos.org";
++            // no default Jitsi domain is shipped
++            domain = "";
+         }
+ 
+         let theme = new ThemeWatcher().getEffectiveTheme();
+diff --git a/apps/web/src/vector/static/incompatible-browser.html b/apps/web/src/vector/static/incompatible-browser.html
+index 38891dc17b53b9b1e80b4f2df8c7d200420a9684..10c4654c9e030dd349988988135fc2b670cf8850 100644
+--- a/apps/web/src/vector/static/incompatible-browser.html
++++ b/apps/web/src/vector/static/incompatible-browser.html
+@@ -769,7 +769,7 @@
+         </div>
+         <div class="mx_HomePage_row mx_Center mx_Spacer">
+             <p class="mx_Spacer">
+-                <a href="https://workspace.seventwos.org" target="_blank" class="mx_FooterLink"> Go to Seventwos Workspace </a>
++                <a href="https://seventwos.com/" target="_blank" class="mx_FooterLink"> Go to Seventwos Workspace </a>
+             </p>
+         </div>
+     </div>
+diff --git a/apps/web/src/vector/static/unable-to-load.html b/apps/web/src/vector/static/unable-to-load.html
+index a1ffbc89f2293989523b1612e87cc4296eafcd2d..1c8012f5fc682088abd0e704c0dcba028b2f635b 100644
+--- a/apps/web/src/vector/static/unable-to-load.html
++++ b/apps/web/src/vector/static/unable-to-load.html
+@@ -188,7 +188,7 @@
+         </div>
+         <div class="mx_HomePage_row mx_Center mx_Spacer">
+             <p class="mx_Spacer">
+-                <a href="https://workspace.seventwos.org" target="_blank" class="mx_FooterLink"> Go to Seventwos Workspace </a>
++                <a href="https://seventwos.com/" target="_blank" class="mx_FooterLink"> Go to Seventwos Workspace </a>
+             </p>
+         </div>
+     </div>
+diff --git a/apps/web/src/widgets/Jitsi.ts b/apps/web/src/widgets/Jitsi.ts
+index 4700c94f56e038ae7204cd7f086942cec822eb2f..361813637fabdc4c2ab0a064ad0b95269c604875 100644
+--- a/apps/web/src/widgets/Jitsi.ts
++++ b/apps/web/src/widgets/Jitsi.ts
+@@ -28,7 +28,7 @@ export class Jitsi {
+     private _useFor1To1Calls = false;
+ 
+     public get preferredDomain(): string {
+-        return this.domain || "meet.seventwos.org";
++        return this.domain || "";
+     }
+ 
+     public get useFor1To1Calls(): boolean {
+@@ -68,7 +68,7 @@ export class Jitsi {
+ 
+     private update = async (discoveryResponse?: IClientWellKnown): Promise<any> => {
+         // Start with a default of the config's domain
+-        let domain = SdkConfig.getObject("jitsi")?.get("preferred_domain") || "meet.seventwos.org";
++        let domain = SdkConfig.getObject("jitsi")?.get("preferred_domain") || "";
+ 
+         logger.log("Attempting to get Jitsi conference information from homeserver");
+         const wkJitsiConfig = discoveryResponse?.[JITSI_WK_PROPERTY] ?? discoveryResponse?.[JITSI_WK_PROPERTY_LEGACY];

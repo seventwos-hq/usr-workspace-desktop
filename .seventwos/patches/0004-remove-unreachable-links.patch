@@ -1,0 +1,58 @@
+diff --git a/apps/web/package.json b/apps/web/package.json
+index 8ad8eec8db41b1c310ae84e9b19db4d550644135..b57c625048e53639046750bbf84203caaf2ca60c 100644
+--- a/apps/web/package.json
++++ b/apps/web/package.json
+@@ -21,7 +21,7 @@
+         "build": "nx build",
+         "build-stats": "nx build --json=webpack-stats.json",
+         "vendor:modernizr": "modernizr -c .modernizr.json -d src/vector/modernizr.js && mv src/vector/modernizr.js src/vector/modernizr.cjs",
+-        "vendor:jitsi": "curl -s https://meet.seventwos.org/libs/external_api.min.js > ./res/jitsi_external_api.min.js",
++        "vendor:jitsi": "curl -s https://meet.jit.si/libs/external_api.min.js > ./res/jitsi_external_api.min.js",
+         "dist": "./scripts/package.sh",
+         "start": "nx start",
+         "lint": "pnpm lint:types && pnpm lint:style",
+diff --git a/apps/web/src/vector/mobile_guide/index.ts b/apps/web/src/vector/mobile_guide/index.ts
+index 368f2d1513c9b703b9af36df0ac6e9b77b6c8c8a..7a5123be75edfbe1be5679cb4a55c69dcc3c5ffe 100644
+--- a/apps/web/src/vector/mobile_guide/index.ts
++++ b/apps/web/src/vector/mobile_guide/index.ts
+@@ -116,7 +116,7 @@ async function initPage(): Promise<void> {
+     if (hsUrl && !hsUrl.endsWith("/")) hsUrl += "/";
+     if (isUrl && !isUrl.endsWith("/")) isUrl += "/";
+ 
+-    let deepLinkUrl = `https://workspace.seventwos.org/mobile${metadata.deepLinkPath}`;
++    let deepLinkUrl = `https://seventwos.com${metadata.deepLinkPath}`;
+ 
+     if (metadata.usesLegacyDeepLink) {
+         deepLinkUrl += `?hs_url=${encodeURIComponent(hsUrl)}`;
+diff --git a/apps/web/src/vector/platform/ElectronPlatform.tsx b/apps/web/src/vector/platform/ElectronPlatform.tsx
+index a5874a68fccff292ae7573ca8faadd0c3aecf58c..90eb185a74661a5fc50ae099ac01916c2fcb445a 100644
+--- a/apps/web/src/vector/platform/ElectronPlatform.tsx
++++ b/apps/web/src/vector/platform/ElectronPlatform.tsx
+@@ -532,12 +532,12 @@ export default class ElectronPlatform extends BasePlatform {
+ 
+     public get baseUrl(): string {
+         // This configuration is element-desktop specific so the types here do not know about it
+-        return (SdkConfig.get() as unknown as Record<string, string>)["web_base_url"] ?? "https://workspace.seventwos.org";
++        return (SdkConfig.get() as unknown as Record<string, string>)["web_base_url"] ?? "https://seventwos.com";
+     }
+ 
+     public get defaultOAuthClientUri(): string {
+         // Default to Seventwos Workspace as our scheme `io.element.desktop` is within its scope on default MAS policies
+-        return "https://workspace.seventwos.org";
++        return "https://seventwos.com";
+     }
+ 
+     public async getOAuthClientMetadata(): Promise<OAuthRegistrationRequest> {
+diff --git a/apps/web/webpack.config.ts b/apps/web/webpack.config.ts
+index ca4fbc409f51e24fe5646a460e916792b0286520..9034c755a617e251d6fbcb820a3c25fedc10c869 100644
+--- a/apps/web/webpack.config.ts
++++ b/apps/web/webpack.config.ts
+@@ -50,7 +50,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
+ 
+ dotenv.config();
+ let ogImageUrl = process.env.RIOT_OG_IMAGE_URL;
+-if (!ogImageUrl) ogImageUrl = "https://workspace.seventwos.org/themes/element/img/logos/opengraph.png";
++if (!ogImageUrl) ogImageUrl = "https://seventwos.com/_corp/images/og-seventwos-social.jpg";
+ 
+ const cssThemes = {
+     // CSS themes

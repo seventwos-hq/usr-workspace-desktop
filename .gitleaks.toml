@@ -14,7 +14,7 @@ id = "generic-api-key"
 [[rules.allowlists]]
 description = "Element crypto-store fixture: public Curve25519 keys"
 condition = "AND"
-paths = ['''^apps/web/playwright/e2e/crypto/test_indexeddb_cryptostore_dump/dump\.json$''']
+paths = ['''^apps/web/playwright/e2e/crypto/test_(legacy_)?indexeddb_cryptostore_dump/dump\.json$''']
 regexTarget = "match"
 regexes = ['''^(senderCurve25519Key|sender_key|deviceKey)"\s*:\s*"[A-Za-z0-9+/]{43}"$''']
 
@@ -46,3 +46,12 @@ condition = "AND"
 paths = ['''^apps/web/src/Searching\.ts$''']
 regexTarget = "secret"
 regexes = ['''^ev\.forwardingCurve25519KeyChain$''']
+
+# Self-signed TLS key used only by the upstream end-to-end test containers.
+# Exempt from the private-key rule for this one file path only.
+[[rules]]
+id = "private-key"
+
+[[rules.allowlists]]
+description = "Element e2e test container: self-signed test TLS key"
+paths = ['''^apps/web/playwright/testcontainers/res/matrix-rtc/tls\.key$''']

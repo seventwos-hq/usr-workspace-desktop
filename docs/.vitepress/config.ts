@@ -24,7 +24,7 @@ function customPathResolver(href: string, currentPath: string): string {
             return `../docs/index.md#${fragment}`;
 
         default:
-            return `https://github.com/seventwos-app/usr-workspace-desktop/blob/develop/${href.split("/").pop()}`;
+            return `https://github.com/seventwos-hq/usr-workspace-desktop/blob/main/${href.split("/").pop()}`;
     }
 }
 
@@ -144,6 +144,6 @@ export default withMermaid({
             },
         ],
 
-        socialLinks: [{ icon: "github", link: "https://github.com/seventwos-app/usr-workspace-desktop" }],
+        socialLinks: [{ icon: "github", link: "https://github.com/seventwos-hq/usr-workspace-desktop" }],
     },
 });

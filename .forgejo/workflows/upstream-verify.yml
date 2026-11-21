@@ -1,0 +1,28 @@
+name: upstream-verify
+# Proves an upstream import under apps/web and packages is byte-identical to the pinned release.
+# The script and the pin are read from the base branch, so a pull request cannot weaken its own check.
+on:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  upstream-verify:
+    runs-on: dev-vm
+    timeout-minutes: 20
+    env:
+      PR_BASE: ${{ github.event.pull_request.base.ref }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git config --global --add safe.directory "$PWD"
+      - name: Verify upstream import
+        run: |
+          git fetch --no-tags origin "+refs/heads/${PR_BASE}:refs/remotes/origin/${PR_BASE}"
+          git show "origin/${PR_BASE}:scripts/upstream/upstream_verify.py" > "$RUNNER_TEMP/upstream_verify.py" \
+            || { echo "checker not found on base branch" >&2; exit 2; }
+          python3 "$RUNNER_TEMP/upstream_verify.py" --base "origin/${PR_BASE}" --head HEAD

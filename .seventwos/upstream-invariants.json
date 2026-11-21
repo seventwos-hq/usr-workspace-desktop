@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "invariants": [
     {
-      "id": "no-apps-web",
+      "id": "web-import-only",
       "severity": "error",
-      "statement": "apps/web must remain absent from the repository."
+      "statement": "apps/web may change only by a byte-identical import of the pinned upstream release, verified by upstream-verify."
     },
     {
       "id": "immutable-bundle-only",

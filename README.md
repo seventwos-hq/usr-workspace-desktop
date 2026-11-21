@@ -40,7 +40,7 @@ capabilities, network destinations, visual identity, and migration of existing E
 
 The seeded `v1.12.27` record is baseline evidence, not an approved selection. Its product intent and runtime evidence
 remain pending human review, so packaging is intentionally blocked until the policy state names an approved bundle.
-`apps/web` must remain absent, moving branch bundles are forbidden, and Seventwos product divergence must not be
+`apps/web` may change only by a verified byte-identical import of the pinned release, moving branch bundles are forbidden, and Seventwos product divergence must not be
 overwritten during upstream assessment.
 
 ## Status

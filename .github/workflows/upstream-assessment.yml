@@ -6,7 +6,7 @@ on:
         - cron: "17 6 * * 1"
     pull_request:
         branches:
-            - develop
+            - main
     merge_group:
         types:
             - checks_requested

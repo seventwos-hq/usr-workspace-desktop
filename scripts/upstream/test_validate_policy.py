@@ -21,6 +21,50 @@ class ValidatePolicyTests(unittest.TestCase):
     def test_repository_policy_is_valid(self) -> None:
         VALIDATOR.validate_ledger()
 
+    def test_web_tree_without_upstream_pin_is_rejected(self) -> None:
+        for kind in ("directory", "file", "dangling-symlink"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                web = root / "apps/web"
+                web.parent.mkdir()
+                if kind == "directory":
+                    web.mkdir()
+                    (web / "index.html").write_text("untrusted", encoding="utf-8")
+                elif kind == "file":
+                    web.write_text("untrusted", encoding="utf-8")
+                else:
+                    web.symlink_to(root / "missing", target_is_directory=True)
+                with mock.patch.object(VALIDATOR, "ROOT", root), mock.patch.object(VALIDATOR, "POLICY_DIR", root / ".seventwos"):
+                    with self.assertRaisesRegex(VALIDATOR.ValidationError, "apps/web (must be a real directory|requires an upstream pin)"):
+                        VALIDATOR.validate_policy_files()
+
+    def test_pinned_web_import_is_allowed_only_when_pin_and_state_agree(self) -> None:
+        pin = {
+            "repository": VALIDATOR.UPSTREAM_REPOSITORY,
+            "tag": "v1.2.3",
+            "url": f"{VALIDATOR.UPSTREAM_URL}/archive/refs/tags/v1.2.3.tar.gz",
+            "sha256": "a" * 64,
+        }
+        cases = (
+            ("ok", pin, "v1.2.3", None),
+            ("state-mismatch", pin, "v9.9.9", "pinnedTag"),
+            ("bad-url", pin | {"url": "https://example.invalid/x.tar.gz"}, "v1.2.3", "tag archive URL"),
+            ("bad-repo", pin | {"repository": "someone/else"}, "v1.2.3", "pinned Element Web"),
+        )
+        for name, pin_value, pinned_tag, error in cases:
+            with self.subTest(case=name), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / "apps/web").mkdir(parents=True)
+                (root / ".seventwos").mkdir()
+                (root / ".seventwos/upstream-pin.json").write_text(json.dumps(pin_value), encoding="utf-8")
+                (root / ".seventwos/upstream-state.json").write_text(json.dumps({"pinnedTag": pinned_tag}), encoding="utf-8")
+                with mock.patch.object(VALIDATOR, "ROOT", root), mock.patch.object(VALIDATOR, "POLICY_DIR", root / ".seventwos"):
+                    if error is None:
+                        VALIDATOR.validate_web_import()
+                    else:
+                        with self.assertRaisesRegex(VALIDATOR.ValidationError, error):
+                            VALIDATOR.validate_web_import()
+
     def test_pending_evidence_cannot_be_selected(self) -> None:
         selected = {
             "evidenceId": self.evidence["evidenceId"],
@@ -198,7 +242,7 @@ class ValidatePolicyTests(unittest.TestCase):
         state = VALIDATOR.load_json(VALIDATOR.REQUIRED_FILES["state"])
         path_map = VALIDATOR.load_json(VALIDATOR.REQUIRED_FILES["path_map"])
         invariants = VALIDATOR.load_json(VALIDATOR.REQUIRED_FILES["invariants"])
-        invariants["invariants"][0]["statement"] = "apps/web is usually absent."
+        invariants["invariants"][0]["statement"] = "apps/web may change freely."
         with self.assertRaisesRegex(VALIDATOR.ValidationError, "removed or weakened"):
             VALIDATOR.validate_policy_semantics(policy, state, path_map, invariants)
 

@@ -380,7 +380,7 @@ pnpm i18n
 Copyright (c) 2026 Element Creations Ltd.
 
 Seventwos distributes this component under the GNU Affero General Public License v3 only.
-See [LICENSE-AGPL-3.0](https://github.com/seventwos-app/usr-workspace-desktop/blob/develop/LICENSE-AGPL-3.0)
+See [LICENSE-AGPL-3.0](https://github.com/seventwos-hq/usr-workspace-desktop/blob/main/LICENSE-AGPL-3.0)
 for the applicable terms.
 
 ## Versioning

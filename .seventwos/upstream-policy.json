@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "policyId": "desktop-selective-upstream-v1",
-  "repository": "seventwos-app/usr-workspace-desktop",
+  "repository": "seventwos-hq/usr-workspace-desktop",
   "integrationModel": "desktop-shell-plus-separately-pinned-element-web-bundle",
   "upstream": {
     "repository": "element-hq/element-web",

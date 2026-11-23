@@ -12,6 +12,7 @@ import { randomArray } from "./utils.js";
 import { consumeDisplayMediaCallback } from "./displayMediaCallback.js";
 import Store, { clearData } from "./store.js";
 import { getConfig } from "./config.js";
+import { FeedbackBroker } from "./feedback.js";
 
 let focusHandlerAttached = false;
 ipcMain.on("loudNotification", function (): void {
@@ -245,6 +246,14 @@ ipcMain.on("ipcCall", async function (_ev: IpcMainEvent, payload) {
 });
 
 ipcMain.handle("getConfig", getConfig);
+
+const feedbackBroker = new FeedbackBroker();
+ipcMain.handle("submitFeedback", async (ev, input: unknown) => {
+    if (!global.mainWindow || ev.sender !== global.mainWindow.webContents) {
+        return { ok: false, error: "invalid", message: "Untrusted sender." };
+    }
+    return feedbackBroker.submit(input, { appVersion: app.getVersion(), platform: process.platform });
+});
 
 const initialisePromiseWithResolvers = Promise.withResolvers<void>();
 export const initialisePromise = initialisePromiseWithResolvers.promise;

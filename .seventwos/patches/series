@@ -10,3 +10,4 @@
 0006-carry-call-default-and-help-link-fixes.patch  No default video-call domain or third-party integration manager; Seventwos names and help link in the remaining config and toast
 0007-point-help-links-at-existing-pages.patch  Help, logo and verification links point at seventwos.com pages that exist; drop the dead develop link
 0008-carry-remaining-web-delta.patch  Fix a type error in the QR code test helper
+0009-desktop-share-feedback.patch  Add Panel 1 Share feedback button and zero-LLM public GitHub issue popover

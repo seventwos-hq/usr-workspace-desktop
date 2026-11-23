@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import inspect
 import io
 import json
 import subprocess
@@ -292,7 +293,10 @@ def check_patches(head: str) -> str:
         archive = subprocess.run(["git", "archive", "--format=tar", head, "--", *[p.rstrip("/") for p in IMPORT_PREFIXES]],
                                  cwd=top, check=True, capture_output=True).stdout
         with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
-            tar.extractall(tmp, filter="data")
+            if "filter" in inspect.signature(tar.extractall).parameters:
+                tar.extractall(tmp, filter="data")
+            else:
+                tar.extractall(tmp)
         for name in entries:
             data = git("show", f"{head}:{PATCH_DIR}/{name}", binary=True)
             validate_patch_paths(name, data)

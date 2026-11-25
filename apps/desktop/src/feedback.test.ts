@@ -74,6 +74,22 @@ describe("FeedbackBroker", () => {
         expect((await broker.submit(good, ctx)).ok).toBe(true);
     });
 
+    it("rate limits concurrent submissions", async () => {
+        const fetchFn = okFetch();
+        const broker = new FeedbackBroker(
+            () => "tok",
+            fetchFn,
+            () => 1_000_000,
+        );
+        const results = await Promise.all([
+            broker.submit(good, ctx),
+            broker.submit(good, ctx),
+            broker.submit(good, ctx),
+        ]);
+        expect(results.filter((r) => r.ok)).toHaveLength(1);
+        expect(fetchFn).toHaveBeenCalledTimes(1);
+    });
+
     it("does not leak the token on GitHub errors", async () => {
         const fetchFn = vi.fn(async () => new Response("bad tok", { status: 403 })) as unknown as typeof fetch;
         const res = await new FeedbackBroker(() => "tok", fetchFn).submit(good, ctx);

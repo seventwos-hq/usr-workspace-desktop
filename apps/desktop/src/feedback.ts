@@ -118,6 +118,8 @@ export class FeedbackBroker {
             return { ok: false, error: "rate_limited", message: "Please wait before sending more feedback." };
         }
 
+        // Reserve the slot before awaiting so concurrent calls count against the limit.
+        this.sent.push(now);
         try {
             const res = await this.fetchFn(`https://api.github.com/repos/${FEEDBACK_REPO}/issues`, {
                 method: "POST",
@@ -138,7 +140,6 @@ export class FeedbackBroker {
             if (typeof data.html_url !== "string" || typeof data.number !== "number") {
                 return { ok: false, error: "failed", message: "Unexpected response from GitHub." };
             }
-            this.sent.push(now);
             return { ok: true, url: data.html_url, number: data.number };
         } catch {
             return { ok: false, error: "failed", message: "Could not reach GitHub." };

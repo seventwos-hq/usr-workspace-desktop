@@ -42,5 +42,7 @@ the token and keep this module as the client contract (follow-up, not implemente
 
 ## UI
 
-The panel UI lives in the externally pinned web bundle (`apps/web` was removed), so it
-is not part of this change; it should call `submitFeedback` above.
+`FeedbackDialog` (`apps/web`) uses `window.electron.submitFeedback` when present (Desktop),
+shows a public-issue notice, and reports success or failure. Outside Desktop it keeps the
+existing rageshake path. Category is currently fixed to `idea`; a category selector and the
+Beta Board retirement are separate follow-ups.

@@ -1267,9 +1267,12 @@
         "can_contact_label": "You may contact me if you have any follow up questions",
         "comment_label": "Comment",
         "existing_issue_link": "Please view <existingIssuesLink>existing bugs on Github</existingIssuesLink> first. No match? <newIssueLink>Start a new one</newIssueLink>.",
+        "failed": "Feedback not sent",
+        "failed_description": "We couldn't send your feedback. Please try again later.",
         "may_contact_label": "You may contact me if you want to follow up or to let me test out upcoming ideas",
         "platform_username": "Your platform and username will be noted to help us use your feedback as much as we can.",
         "pro_type": "PRO TIP: If you start a bug, please submit <debugLogsLink>debug logs</debugLogsLink> to help us track down the problem.",
+        "public_issue_notice": "Your feedback will be posted as a public GitHub issue. Don't include private information.",
         "send_feedback_action": "Send feedback",
         "sent": "Feedback sent! Thanks, we appreciate it!"
     },

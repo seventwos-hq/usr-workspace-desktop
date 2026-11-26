@@ -166,6 +166,17 @@ class UpstreamVerifyTests(unittest.TestCase):
         with self.assertRaisesRegex(UV.VerifyError, "nested patch path not allowed"):
             self.verify()
 
+    def test_verify_head_checks_imported_tree_without_import_diff(self):
+        self.accept_import()
+        self.write("apps/web/src/a.ts", b"export const a = 2;\n")
+        self.commit("tamper imported tree")
+        self.git("branch", "-f", "main", "HEAD")
+        self.write("README.md", b"z\n")
+        self.commit("unrelated change")
+        self.assertIn("no upstream import", self.verify())
+        with self.assertRaisesRegex(UV.VerifyError, "content differs: apps/web/src/a.ts"):
+            UV.verify("main", "HEAD", fetch=self.fetch, verify_head=True)
+
     def test_non_import_change_passes(self):
         self.write("README.md", b"y\n")
         self.commit("docs")

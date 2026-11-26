@@ -3,14 +3,6 @@ name: Build Seventwos Desktop Artifacts
 on:
     workflow_dispatch:
         inputs:
-            web_bundle_url:
-                description: "Exact HTTPS URL of the pinned upstream web bundle"
-                required: true
-                type: string
-            web_bundle_sha256:
-                description: "SHA-256 digest of the pinned upstream web bundle"
-                required: true
-                type: string
             variant:
                 description: "Seventwos desktop build variant"
                 required: true
@@ -20,12 +12,12 @@ on:
                     - release
                     - preview
             macos:
-                description: "Build unsigned macOS artifacts"
+                description: "Build macOS artifacts"
                 required: true
                 type: boolean
                 default: true
             windows:
-                description: "Build unsigned Windows artifacts"
+                description: "Build Windows artifacts"
                 required: true
                 type: boolean
                 default: true
@@ -49,17 +41,18 @@ jobs:
             contents: read
         with:
             config: seventwos.com/${{ inputs.variant }}
-            web-bundle-url: ${{ inputs.web_bundle_url }}
-            web-bundle-sha256: ${{ inputs.web_bundle_sha256 }}
 
     windows:
         if: inputs.windows
         needs: prepare
-        name: Windows ${{ matrix.arch }} (unsigned)
+        name: Windows ${{ matrix.arch }}
         strategy:
             matrix:
                 arch: [x64, arm64]
         uses: ./.github/workflows/build_desktop_windows.yaml
+        secrets:
+            SEVENTWOS_WORKSPACE_SIGNTOOL_SUBJECT_NAME: ${{ secrets.SEVENTWOS_WORKSPACE_SIGNTOOL_SUBJECT_NAME }}
+            SEVENTWOS_WORKSPACE_SIGNTOOL_THUMBPRINT: ${{ secrets.SEVENTWOS_WORKSPACE_SIGNTOOL_THUMBPRINT }}
         with:
             arch: ${{ matrix.arch }}
             test: false
@@ -67,8 +60,17 @@ jobs:
     macos:
         if: inputs.macos
         needs: prepare
-        name: macOS (unsigned)
+        name: macOS
         uses: ./.github/workflows/build_desktop_macos.yaml
+        secrets:
+            SEVENTWOS_WORKSPACE_APPLE_TEAM_ID: ${{ secrets.SEVENTWOS_WORKSPACE_APPLE_TEAM_ID }}
+            APPLE_ID: ${{ secrets.APPLE_ID }}
+            APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+            APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+            APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+            APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+            APPLE_KEYCHAIN: ${{ secrets.APPLE_KEYCHAIN }}
+            APPLE_KEYCHAIN_PROFILE: ${{ secrets.APPLE_KEYCHAIN_PROFILE }}
         with:
             test: false
 

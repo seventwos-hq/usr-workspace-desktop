@@ -306,9 +306,11 @@ def check_patches(head: str) -> str:
     return f"{len(entries)} patches apply cleanly"
 
 
-def verify(base: str, head: str, fetch=download) -> str:
+def verify(base: str, head: str, fetch=download, *, verify_head: bool = False) -> str:
     paths = changed_paths(base, head)
     result = verify_import(base, head, fetch, paths=paths)
+    if verify_head:
+        result = verify_import(base, head, fetch, paths=[IMPORT_PREFIXES[0]])
     if not is_import(paths, base, head) and not any(p.startswith(PATCH_DIR + "/") for p in paths):
         return result
     return f"{result}; {check_patches(head)}"
@@ -336,9 +338,11 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--base", required=True)
     ap.add_argument("--head", default="HEAD")
+    ap.add_argument("--verify-head", action="store_true",
+                    help="verify the checked-out upstream tree even when the diff has no import")
     args = ap.parse_args(argv)
     try:
-        print(verify(args.base, args.head))
+        print(verify(args.base, args.head, verify_head=args.verify_head))
     except VerifyError as exc:
         print(f"FAIL: {exc}", file=sys.stderr)
         return 1

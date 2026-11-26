@@ -74,6 +74,8 @@ packageExtensions:
 
 allowBuilds:
     matrix-js-sdk: true
+    # Downloads the Electron runtime used by the desktop module and unit tests
+    electron: true
     # Needed to make the git dependency in layered.sh happy
     "matrix-js-sdk@git+https://github.com/matrix-org/matrix-js-sdk.git": true
     "matrix-js-sdk@file:matrix-js-sdk/matrix-js-sdk.tgz": true

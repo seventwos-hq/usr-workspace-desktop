@@ -7,14 +7,6 @@ on:
                 type: string
                 required: true
                 description: "Repository-relative config directory under apps/desktop"
-            web-bundle-url:
-                type: string
-                required: true
-                description: "Exact HTTPS URL of the explicitly selected upstream web bundle"
-            web-bundle-sha256:
-                type: string
-                required: true
-                description: "Expected lowercase or uppercase SHA-256 digest of the web bundle"
 
 permissions:
     contents: read
@@ -26,6 +18,7 @@ jobs:
         steps:
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
               with:
+                  fetch-depth: 0
                   persist-credentials: false
 
             - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -38,40 +31,51 @@ jobs:
               shell: bash
               env:
                   CONFIG: ${{ inputs.config }}
-                  WEB_BUNDLE_URL: ${{ inputs.web-bundle-url }}
-                  WEB_BUNDLE_SHA256: ${{ inputs.web-bundle-sha256 }}
+                  EVENT_NAME: ${{ github.event_name }}
+                  PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                  MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+                  REF_TYPE: ${{ github.ref_type }}
+                  REF_NAME: ${{ github.ref_name }}
               run: |
                   set -euo pipefail
                   [[ "$CONFIG" == "seventwos.com/release" || "$CONFIG" == "seventwos.com/preview" ]]
-                  [[ "$WEB_BUNDLE_URL" == https://* ]]
-                  [[ "$WEB_BUNDLE_SHA256" =~ ^[[:xdigit:]]{64}$ ]]
                   test -f "apps/desktop/$CONFIG/build.json"
                   test -f "apps/desktop/$CONFIG/config.json"
-                  python3 scripts/upstream/validate_policy.py \
-                      --selection-url "$WEB_BUNDLE_URL" \
-                      --selection-sha256 "$WEB_BUNDLE_SHA256"
+                  git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+                  if [[ "$EVENT_NAME" == "pull_request" ]]; then
+                      BASE="$PR_BASE_SHA"
+                  elif [[ "$EVENT_NAME" == "merge_group" ]]; then
+                      BASE="$MERGE_GROUP_BASE_SHA"
+                  elif [[ "$REF_TYPE" == "tag" ]]; then
+                      git merge-base --is-ancestor HEAD origin/main
+                      BASE="origin/main"
+                  elif [[ "$EVENT_NAME" == "workflow_dispatch" && "$REF_TYPE" == "branch" && "$REF_NAME" == "main" ]]; then
+                      BASE="origin/main"
+                  else
+                      printf "cannot determine trusted upstream base for event %s, ref type %s, ref %s\n" "$EVENT_NAME" "$REF_TYPE" "$REF_NAME" >&2
+                      exit 1
+                  fi
+                  test -n "$BASE"
+                  if [[ "$BASE" != origin/* ]]; then
+                      git fetch --no-tags origin "$BASE"
+                  fi
+                  git rev-parse --verify "${BASE}^{commit}" >/dev/null
+                  python3 scripts/upstream/upstream_verify.py --base "$BASE" --head HEAD --verify-head
 
-            - name: Install desktop dependencies
-              run: pnpm install --frozen-lockfile --filter seventwos-workspace-desktop
+            - name: Install build dependencies
+              run: pnpm install --frozen-lockfile
 
-            - name: Download and verify pinned upstream web bundle
-              working-directory: apps/desktop
+            - name: Build and package the patched web application
               shell: bash
               env:
                   CONFIG: ${{ inputs.config }}
-                  WEB_BUNDLE_URL: ${{ inputs.web-bundle-url }}
-                  WEB_BUNDLE_SHA256: ${{ inputs.web-bundle-sha256 }}
               run: |
                   set -euo pipefail
-                  curl --fail --location --proto '=https' --tlsv1.2 \
-                      --output web-bundle.tar.gz "$WEB_BUNDLE_URL"
-                  EXPECTED_SHA256=$(printf '%s' "$WEB_BUNDLE_SHA256" | tr '[:upper:]' '[:lower:]')
-                  printf '%s  %s\n' "$EXPECTED_SHA256" web-bundle.tar.gz | sha256sum --check
-                  mkdir webapp
-                  tar xzf web-bundle.tar.gz -C webapp --strip-components=1
-                  cp "$CONFIG/config.json" webapp/config.json
-                  pnpm exec asar pack webapp webapp.asar
-                  cp "$CONFIG/build.json" variant.json
+                  python3 scripts/upstream/apply_patches.py --root .
+                  VERSION="$(node -p 'require("./apps/desktop/package.json").version')" pnpm --dir apps/web build
+                  cp "apps/desktop/$CONFIG/config.json" apps/web/webapp/config.json
+                  pnpm --dir apps/desktop exec asar pack ../../apps/web/webapp webapp.asar
+                  cp "apps/desktop/$CONFIG/build.json" apps/desktop/variant.json
 
             - name: Generate native cache inputs
               working-directory: apps/desktop

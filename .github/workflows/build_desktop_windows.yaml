@@ -1,6 +1,6 @@
 # This workflow relies on actions/cache to store the hak dependency artifacts as they take a long time to build
 # Due to this extra care must be taken to only ever run all build_* scripts against the same branch to ensure
-# the correct cache scoping, and additional care must be taken to not run untrusted actions on the develop branch.
+# the correct cache scoping, and additional care must be taken to not run untrusted actions on the protected main branch.
 
 defaults:
     run:
@@ -58,6 +58,11 @@ on:
                 required: false
                 description: "List of targets to build"
                 default: "squirrel msi"
+        secrets:
+            SEVENTWOS_WORKSPACE_SIGNTOOL_SUBJECT_NAME:
+                required: false
+            SEVENTWOS_WORKSPACE_SIGNTOOL_THUMBPRINT:
+                required: false
 permissions:
     contents: read
 jobs:
@@ -192,6 +197,8 @@ jobs:
                   BUILD_ARGS: ${{ steps.config.outputs.build-args }}
                   TARGETS: ${{ inputs.targets }}
                   CSC_IDENTITY_AUTO_DISCOVERY: false
+                  SEVENTWOS_WORKSPACE_SIGNTOOL_SUBJECT_NAME: ${{ secrets.SEVENTWOS_WORKSPACE_SIGNTOOL_SUBJECT_NAME }}
+                  SEVENTWOS_WORKSPACE_SIGNTOOL_THUMBPRINT: ${{ secrets.SEVENTWOS_WORKSPACE_SIGNTOOL_THUMBPRINT }}
 
             - name: Upload Artifacts
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

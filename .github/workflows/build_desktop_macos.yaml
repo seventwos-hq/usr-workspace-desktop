@@ -1,6 +1,6 @@
 # This workflow relies on actions/cache to store the hak dependency artifacts as they take a long time to build
 # Due to this extra care must be taken to only ever run all build_* scripts against the same branch to ensure
-# the correct cache scoping, and additional care must be taken to not run untrusted actions on the develop branch.
+# the correct cache scoping, and additional care must be taken to not run untrusted actions on the protected main branch.
 on:
     workflow_call:
         inputs:
@@ -45,6 +45,23 @@ on:
                 required: false
                 description: "List of targets to build"
                 default: "dmg zip"
+        secrets:
+            SEVENTWOS_WORKSPACE_APPLE_TEAM_ID:
+                required: false
+            APPLE_ID:
+                required: false
+            APPLE_APP_SPECIFIC_PASSWORD:
+                required: false
+            APPLE_API_KEY:
+                required: false
+            APPLE_API_KEY_ID:
+                required: false
+            APPLE_API_ISSUER:
+                required: false
+            APPLE_KEYCHAIN:
+                required: false
+            APPLE_KEYCHAIN_PROFILE:
+                required: false
 permissions:
     contents: read
 jobs:
@@ -113,6 +130,14 @@ jobs:
                   CSC_IDENTITY_AUTO_DISCOVERY: false
                   VARIANT_PATH: variant.json
                   TARGETS: ${{ inputs.targets }}
+                  APPLE_TEAM_ID: ${{ secrets.SEVENTWOS_WORKSPACE_APPLE_TEAM_ID }}
+                  APPLE_ID: ${{ secrets.APPLE_ID }}
+                  APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+                  APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+                  APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+                  APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+                  APPLE_KEYCHAIN: ${{ secrets.APPLE_KEYCHAIN }}
+                  APPLE_KEYCHAIN_PROFILE: ${{ secrets.APPLE_KEYCHAIN_PROFILE }}
 
             # We exclude mac-universal as the unpacked app takes forever to upload and zip and dmg already contains it
             - name: Upload Artifacts

@@ -1,0 +1,185 @@
+name: Publish Seventwos Desktop Release
+
+on:
+    push:
+        tags: ["desktop-v*"]
+
+permissions:
+    contents: read
+
+jobs:
+    prepare:
+        uses: ./.github/workflows/build_desktop_prepare.yaml
+        with:
+            config: seventwos.com/release
+
+    windows:
+        needs: prepare
+        strategy:
+            matrix:
+                arch: [x64, arm64]
+        uses: ./.github/workflows/build_desktop_windows.yaml
+        secrets:
+            SEVENTWOS_WORKSPACE_SIGNTOOL_SUBJECT_NAME: ${{ secrets.SEVENTWOS_WORKSPACE_SIGNTOOL_SUBJECT_NAME }}
+            SEVENTWOS_WORKSPACE_SIGNTOOL_THUMBPRINT: ${{ secrets.SEVENTWOS_WORKSPACE_SIGNTOOL_THUMBPRINT }}
+        with:
+            arch: ${{ matrix.arch }}
+            artifact-prefix: release-
+            test: false
+
+    macos:
+        needs: prepare
+        uses: ./.github/workflows/build_desktop_macos.yaml
+        secrets:
+            SEVENTWOS_WORKSPACE_APPLE_TEAM_ID: ${{ secrets.SEVENTWOS_WORKSPACE_APPLE_TEAM_ID }}
+            APPLE_ID: ${{ secrets.APPLE_ID }}
+            APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+            APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+            APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+            APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+            APPLE_KEYCHAIN: ${{ secrets.APPLE_KEYCHAIN }}
+            APPLE_KEYCHAIN_PROFILE: ${{ secrets.APPLE_KEYCHAIN_PROFILE }}
+        with:
+            artifact-prefix: release-
+            test: false
+
+    linux:
+        needs: prepare
+        strategy:
+            matrix:
+                arch: [amd64, arm64]
+        uses: ./.github/workflows/build_desktop_linux.yaml
+        with:
+            arch: ${{ matrix.arch }}
+            sqlcipher: static
+            artifact-prefix: release-
+            test: false
+
+    publish:
+        needs: [windows, macos, linux]
+        runs-on: ubuntu-24.04
+        environment: desktop-release
+        permissions:
+            contents: read
+            id-token: write
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+              with:
+                  fetch-depth: 0
+            - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+              with:
+                  pattern: release-*
+                  path: artifacts
+            - uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+              with:
+                  client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                  tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                  subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+            - name: Validate release tag, branch policy, and stage installers
+              id: stage
+              shell: bash
+              env:
+                  TAG: ${{ github.ref_name }}
+              run: |
+                  set -euo pipefail
+                  [[ "$TAG" =~ ^desktop-v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]
+                  TAG_SHA="$(git rev-list -n1 "refs/tags/$TAG")"
+                  [[ "$TAG_SHA" == "$(git rev-parse HEAD)" ]]
+                  git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+                  git merge-base --is-ancestor "$TAG_SHA" origin/main
+                  VERSION="${TAG#desktop-v}"
+                  PACKAGE_VERSION="$(node -p 'require("./apps/desktop/package.json").version')"
+                  [[ "$VERSION" == "$PACKAGE_VERSION" ]] || {
+                      printf 'release tag version %s does not match apps/desktop/package.json version %s\\n' "$VERSION" "$PACKAGE_VERSION" >&2
+                      exit 1
+                  }
+                  PRERELEASE=true
+                  if [[ "$TAG" =~ ^desktop-v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+                      PRERELEASE=false
+                  fi
+                  mkdir -p release
+                  mapfile -t WIN_FILES < <(find artifacts/release-win-x64 -type f -name '*.msi' | sort)
+                  mapfile -t MAC_FILES < <(find artifacts/release-macos -type f -name '*.dmg' | sort)
+                  mapfile -t LIN_FILES < <(find artifacts/release-linux-amd64-sqlcipher-static -type f -name '*amd64.deb' | sort)
+                  [[ ${#WIN_FILES[@]} -eq 1 && ${#MAC_FILES[@]} -eq 1 && ${#LIN_FILES[@]} -eq 1 ]]
+                  WINDOWS="${WIN_FILES[0]}"
+                  MACOS="${MAC_FILES[0]}"
+                  LINUX="${LIN_FILES[0]}"
+                  cp "$WINDOWS" release/windows.msi
+                  cp "$MACOS" release/macos.dmg
+                  cp "$LINUX" release/linux-amd64.deb
+                  printf 'version=%s\n' "$VERSION" >> "$GITHUB_OUTPUT"
+                  printf 'prerelease=%s\n' "$PRERELEASE" >> "$GITHUB_OUTPUT"
+            - name: Build checksum manifest
+              shell: bash
+              env:
+                  VERSION: ${{ steps.stage.outputs.version }}
+                  BASE_URL: ${{ secrets.DESKTOP_DOWNLOADS_BASE_URL }}
+              run: |
+                  set -euo pipefail
+                  test -n "$BASE_URL"
+                  [[ "$BASE_URL" == https://* ]]
+                  python3 - "$BASE_URL" "$VERSION" <<'PY'
+                  import hashlib, json, sys
+                  from pathlib import Path
+                  base, version = sys.argv[1].rstrip("/"), sys.argv[2]
+                  manifest = {}
+                  for platform, name in (("windows", "windows.msi"), ("macos", "macos.dmg"), ("linux", "linux-amd64.deb")):
+                      path = Path("release") / name
+                      digest = hashlib.sha256(path.read_bytes()).hexdigest()
+                      manifest[platform] = {"url": f"{base}/v{version}/{name}", "version": version, "sha256": digest}
+                  Path("manifest.json").write_text(json.dumps(manifest, sort_keys=True) + "\n")
+                  PY
+                  python3 -m json.tool manifest.json >/dev/null
+            - name: Upload versioned installers
+              shell: bash
+              env:
+                  VERSION: ${{ steps.stage.outputs.version }}
+                  AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+                  AZURE_STORAGE_CONTAINER: ${{ secrets.AZURE_STORAGE_CONTAINER }}
+              run: |
+                  set -euo pipefail
+                  test -n "$AZURE_STORAGE_ACCOUNT"
+                  test -n "$AZURE_STORAGE_CONTAINER"
+                  az storage blob upload-batch \
+                      --account-name "$AZURE_STORAGE_ACCOUNT" \
+                      --auth-mode login \
+                      --destination "$AZURE_STORAGE_CONTAINER" \
+                      --destination-path "v$VERSION" \
+                      --source release \
+                      --overwrite false \
+                      --only-show-errors
+            - name: Publish versioned download manifest
+              shell: bash
+              env:
+                  VERSION: ${{ steps.stage.outputs.version }}
+                  AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+                  AZURE_STORAGE_CONTAINER: ${{ secrets.AZURE_STORAGE_CONTAINER }}
+              run: |
+                  set -euo pipefail
+                  az storage blob upload \
+                      --account-name "$AZURE_STORAGE_ACCOUNT" \
+                      --auth-mode login \
+                      --container-name "$AZURE_STORAGE_CONTAINER" \
+                      --name "v$VERSION/manifest.json" \
+                      --file manifest.json \
+                      --overwrite false \
+                      --content-cache-control 'public, max-age=300' \
+                      --only-show-errors
+            - name: Publish latest stable download manifest
+              if: steps.stage.outputs.prerelease != 'true'
+              shell: bash
+              env:
+                  AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+                  AZURE_STORAGE_CONTAINER: ${{ secrets.AZURE_STORAGE_CONTAINER }}
+              run: |
+                  set -euo pipefail
+                  az storage blob upload \
+                      --account-name "$AZURE_STORAGE_ACCOUNT" \
+                      --auth-mode login \
+                      --container-name "$AZURE_STORAGE_CONTAINER" \
+                      --name manifest.json \
+                      --file manifest.json \
+                      --overwrite true \
+                      --content-cache-control 'public, max-age=300' \
+                      --only-show-errors

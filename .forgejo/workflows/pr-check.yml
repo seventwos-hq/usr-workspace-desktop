@@ -48,7 +48,7 @@ jobs:
           /tmp/sg/bin/pip install --quiet "semgrep==${SEMGREP_VERSION}"
           /tmp/sg/bin/semgrep --version
           /tmp/sg/bin/semgrep scan --config p/default --metrics=off --disable-version-check \
-            --jobs 1 --max-memory 1500 --timeout 20 --error=false --quiet --text --output /tmp/semgrep.txt || true
+            --jobs 1 --max-memory 1500 --timeout 20 --quiet --text --output /tmp/semgrep.txt || true
           echo "=== Semgrep findings (report-only) ==="
           tail -n 200 /tmp/semgrep.txt || true
           grep -cE '^ +❯❯' /tmp/semgrep.txt || true

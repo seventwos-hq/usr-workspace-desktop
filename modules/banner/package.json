@@ -36,6 +36,6 @@
         "@vector-im/compound-web": "^9.0.0",
         "motion": "^13.0.0",
         "styled-components": "^6.1.18",
-        "zod": "^4.0.0"
+        "zod": "^4.6.6"
     }
 }

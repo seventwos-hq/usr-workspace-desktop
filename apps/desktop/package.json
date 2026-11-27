@@ -3,7 +3,7 @@
     "productName": "Seventwos Workspace",
     "main": "lib/electron-main.js",
     "exports": "./lib/electron-main.js",
-    "version": "1.12.35",
+    "version": "1.12.36",
     "description": "Seventwos Workspace desktop client",
     "author": {
         "name": "Seventwos"

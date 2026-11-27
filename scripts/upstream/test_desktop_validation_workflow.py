@@ -63,6 +63,51 @@ class DesktopValidationWorkflowTests(unittest.TestCase):
         self.assertLess(apply, build)
         self.assertLess(build, pack)
 
+    def test_windows_arm64_openssl_installs_perl_template_module(self) -> None:
+        workflow = (ROOT / ".github/workflows/build_desktop_windows.yaml").read_text(encoding="utf-8")
+        step = workflow[workflow.index("            - name: Install Perl Text::Template for OpenSSL"):workflow.index("            - name: Choco install NetWide Assembler")]
+        self.assertIn("strawberryperl", step)
+        self.assertIn("Text::Template", step)
+        self.assertIn("PERL=$perl", step)
+        check = step.index("& $perl -MText::Template -e 1", step.index("if ($LASTEXITCODE -ne 0)"))
+        failure = step.index("if ($LASTEXITCODE -ne 0)", check)
+        output = step.index("Out-File -FilePath $env:GITHUB_PATH", failure)
+        self.assertLess(check, failure)
+        self.assertLess(failure, output)
+        self.assertIn("apps\\desktop\\scripts\\cl.bat", workflow)
+        self.assertIn("inputs.arch == 'arm64'", step)
+
+    def test_linux_hak_build_uses_compatibility_container(self) -> None:
+        workflow = (ROOT / ".github/workflows/build_desktop_linux.yaml").read_text(encoding="utf-8")
+        natives = workflow[workflow.index("            - name: Build Natives"):workflow.index("            - name: Fix permissions")]
+        self.assertIn("docker build", natives)
+        self.assertIn("docker run --rm", natives)
+        self.assertIn("ARCH: ${{ inputs.arch }}", natives)
+        self.assertIn("linux/$ARCH", natives)
+        self.assertNotIn("linux/${{ inputs.arch }}", natives)
+        self.assertIn("pnpm run build:native", natives)
+        self.assertNotIn("docker/build-push-action", natives)
+        self.assertNotIn("rustup toolchain install", natives)
+
+    def test_release_stages_and_manifests_every_supported_platform(self) -> None:
+        workflow = RELEASE_WORKFLOW.read_text(encoding="utf-8")
+        expected = {
+            "win-x64.msi": "artifacts/release-win-x64",
+            "win-arm64.msi": "artifacts/release-win-arm64",
+            "macos.dmg": "artifacts/release-macos",
+            "linux-amd64.deb": "artifacts/release-linux-amd64-sqlcipher-static",
+            "linux-arm64.deb": "artifacts/release-linux-arm64-sqlcipher-static",
+        }
+        stage = workflow[workflow.index("            - name: Validate release tag, branch policy, and stage installers"):workflow.index("            - name: Build checksum manifest")]
+        manifest = workflow[workflow.index("            - name: Build checksum manifest"):workflow.index("            - name: Upload versioned installers")]
+        for filename, artifact in expected.items():
+            self.assertIn(artifact, stage)
+            self.assertIn(filename, stage)
+            self.assertIn(filename, manifest)
+        for compat_key in ('"windows"', '"linux"', '"win-x64"', '"win-arm64"', '"macos"', '"linux-amd64"', '"linux-arm64"'):
+            self.assertIn(compat_key, manifest)
+        self.assertEqual(workflow.count("fail-fast: false"), 2)
+
     def test_release_upload_is_tag_gated_and_oidc_only(self) -> None:
         workflow = RELEASE_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn('tags: ["desktop-v*"]', workflow)

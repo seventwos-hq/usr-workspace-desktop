@@ -16,6 +16,7 @@ jobs:
     windows:
         needs: prepare
         strategy:
+            fail-fast: false
             matrix:
                 arch: [x64, arm64]
         uses: ./.github/workflows/build_desktop_windows.yaml
@@ -46,6 +47,7 @@ jobs:
     linux:
         needs: prepare
         strategy:
+            fail-fast: false
             matrix:
                 arch: [amd64, arm64]
         uses: ./.github/workflows/build_desktop_linux.yaml
@@ -98,16 +100,20 @@ jobs:
                       PRERELEASE=false
                   fi
                   mkdir -p release
-                  mapfile -t WIN_FILES < <(find artifacts/release-win-x64 -type f -name '*.msi' | sort)
-                  mapfile -t MAC_FILES < <(find artifacts/release-macos -type f -name '*.dmg' | sort)
-                  mapfile -t LIN_FILES < <(find artifacts/release-linux-amd64-sqlcipher-static -type f -name '*amd64.deb' | sort)
-                  [[ ${#WIN_FILES[@]} -eq 1 && ${#MAC_FILES[@]} -eq 1 && ${#LIN_FILES[@]} -eq 1 ]]
-                  WINDOWS="${WIN_FILES[0]}"
-                  MACOS="${MAC_FILES[0]}"
-                  LINUX="${LIN_FILES[0]}"
-                  cp "$WINDOWS" release/windows.msi
-                  cp "$MACOS" release/macos.dmg
-                  cp "$LINUX" release/linux-amd64.deb
+                  stage_one() {
+                      local artifact="$1" pattern="$2" output="$3"
+                      mapfile -t matches < <(find "$artifact" -type f -name "$pattern" | sort)
+                      [[ ${#matches[@]} -eq 1 ]] || {
+                          printf 'expected exactly one %s in %s, found %s\n' "$pattern" "$artifact" "${#matches[@]}" >&2
+                          exit 1
+                      }
+                      cp "${matches[0]}" "release/$output"
+                  }
+                  stage_one artifacts/release-win-x64 '*.msi' win-x64.msi
+                  stage_one artifacts/release-win-arm64 '*.msi' win-arm64.msi
+                  stage_one artifacts/release-macos '*.dmg' macos.dmg
+                  stage_one artifacts/release-linux-amd64-sqlcipher-static '*amd64.deb' linux-amd64.deb
+                  stage_one artifacts/release-linux-arm64-sqlcipher-static '*arm64.deb' linux-arm64.deb
                   printf 'version=%s\n' "$VERSION" >> "$GITHUB_OUTPUT"
                   printf 'prerelease=%s\n' "$PRERELEASE" >> "$GITHUB_OUTPUT"
             - name: Build checksum manifest
@@ -124,7 +130,16 @@ jobs:
                   from pathlib import Path
                   base, version = sys.argv[1].rstrip("/"), sys.argv[2]
                   manifest = {}
-                  for platform, name in (("windows", "windows.msi"), ("macos", "macos.dmg"), ("linux", "linux-amd64.deb")):
+                  artifacts = (
+                      ("windows", "win-x64.msi"),
+                      ("win-x64", "win-x64.msi"),
+                      ("win-arm64", "win-arm64.msi"),
+                      ("macos", "macos.dmg"),
+                      ("linux", "linux-amd64.deb"),
+                      ("linux-amd64", "linux-amd64.deb"),
+                      ("linux-arm64", "linux-arm64.deb"),
+                  )
+                  for platform, name in artifacts:
                       path = Path("release") / name
                       digest = hashlib.sha256(path.read_bytes()).hexdigest()
                       manifest[platform] = {"url": f"{base}/v{version}/{name}", "version": version, "sha256": digest}

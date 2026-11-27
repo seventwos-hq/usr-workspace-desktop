@@ -121,11 +121,21 @@ jobs:
 
             - name: Build Natives
               if: steps.cache.outputs.cache-hit != 'true'
-              working-directory: apps/desktop
               run: |
-                  rustup toolchain install stable --profile minimal --no-self-update
-                  rustup default stable
-                  pnpm run build:native
+                  DOCKER_BUILDKIT=1 docker build \
+                    --platform "linux/$ARCH" \
+                    -f apps/desktop/dockerbuild/Dockerfile \
+                    -t "desktop-hak-build:$ARCH" \
+                    apps/desktop
+                  docker run --rm \
+                    --platform "linux/$ARCH" \
+                    -e SQLCIPHER_BUNDLED="$SQLCIPHER_BUNDLED" \
+                    -v "$GITHUB_WORKSPACE:/project" \
+                    -w /project/apps/desktop \
+                    "desktop-hak-build:$ARCH" \
+                    pnpm run build:native
+              env:
+                  ARCH: ${{ inputs.arch }}
 
             - name: Fix permissions
               run: |

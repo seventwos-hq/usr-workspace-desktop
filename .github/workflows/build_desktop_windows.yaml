@@ -119,6 +119,31 @@ jobs:
                   choco install -y magicsplat-tcl-tk --no-progress
                   echo "${HOME}/AppData/Local/Apps/Tcl86/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
+            # OpenSSL 1.1.1's generated configure step requires Text::Template (avoid Git MSYS2 Perl).
+            - name: Install Perl Text::Template for OpenSSL
+              if: steps.cache.outputs.cache-hit != 'true' && inputs.arch == 'arm64'
+              shell: pwsh
+              run: |
+                  $perl = 'C:\Strawberry\perl\bin\perl.exe'
+                  if (-not (Test-Path $perl)) {
+                      choco install -y strawberryperl --no-progress
+                  }
+                  & $perl -MText::Template -e 1 2>$null
+                  if ($LASTEXITCODE -ne 0) {
+                      $cpanm = 'C:\Strawberry\perl\bin\cpanm.bat'
+                      if (Test-Path $cpanm) {
+                          & $cpanm --notest Text::Template
+                      } else {
+                          & 'C:\Strawberry\perl\bin\cpan.bat' -T Text::Template
+                      }
+                  }
+                  & $perl -MText::Template -e 1
+                  if ($LASTEXITCODE -ne 0) {
+                      exit $LASTEXITCODE
+                  }
+                  "C:\Strawberry\perl\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+                  "PERL=$perl" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
             - name: Choco install NetWide Assembler
               if: steps.cache.outputs.cache-hit != 'true'
               shell: pwsh
@@ -160,11 +185,11 @@ jobs:
                   rm webapp.asar
                   pnpm asar pack config-edit/ webapp.asar
 
-            - name: Set up sqlcipher macros
-              if: steps.cache.outputs.cache-hit != 'true' && contains(inputs.arch, 'arm')
+            - name: Set up sqlcipher ARM64 compiler
+              if: steps.cache.outputs.cache-hit != 'true' && inputs.arch == 'arm64'
               shell: pwsh
               run: |
-                  echo "NCC=${{ github.workspace }}\scripts\cl.bat" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+                  echo "NCC=${{ github.workspace }}\apps\desktop\scripts\cl.bat" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
             - name: Set up build tools
               if: steps.cache.outputs.cache-hit != 'true'

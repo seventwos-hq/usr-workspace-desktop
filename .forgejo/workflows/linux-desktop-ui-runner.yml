@@ -1,0 +1,27 @@
+name: Linux desktop UI runner
+
+on:
+  pull_request:
+    paths:
+      - apps/desktop/playwright/**
+      - .forgejo/workflows/linux-desktop-ui-runner.yml
+      - scripts/tests/test_desktop_ui_runner_config.py
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  config-lint:
+    runs-on: dev-vm
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Validate Compose and isolation contracts
+        run: |
+          if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+            docker compose -f apps/desktop/playwright/runner/compose.yaml config --quiet
+          fi
+          python3 -m unittest -v scripts.tests.test_desktop_ui_runner_config

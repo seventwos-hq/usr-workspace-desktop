@@ -1,0 +1,65 @@
+{
+  "name": "desktop-ui-runner",
+  "services": {
+    "ui-tests": {
+      "init": true,
+      "read_only": true,
+      "user": "1000:1000",
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "networks": [
+        "isolated"
+      ],
+      "ports": [],
+      "ipc": "private",
+      "shm_size": "1gb",
+      "pids_limit": 512,
+      "mem_limit": "4g",
+      "cpus": 2,
+      "working_dir": "/work",
+      "environment": {
+        "HOME": "/tmp/runner",
+        "CI": "true",
+        "PW_TAG": "${PW_TAG:-linux-desktop-smoke}",
+        "ELEMENT_DESKTOP_EXECUTABLE": "${ELEMENT_DESKTOP_EXECUTABLE:-/work/apps/desktop/dist/linux-unpacked/seventwos-workspace-desktop}",
+        "PLAYWRIGHT_HTML_OPEN": "never",
+        "GITHUB_ACTIONS": "1"
+      },
+      "volumes": [
+        {
+          "type": "bind",
+          "source": "../../../..",
+          "target": "/work",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "../../dist",
+          "target": "/work/apps/desktop/dist",
+          "read_only": true
+        }
+      ],
+      "tmpfs": [
+        "/tmp:rw,noexec,nosuid,nodev,size=2g,uid=1000,gid=1000,mode=0700",
+        "/run:rw,noexec,nosuid,nodev,size=64m,uid=1000,gid=1000,mode=0755"
+      ],
+      "command": [
+        "--output=/tmp/runner/test-results",
+        "${PLAYWRIGHT_TARGET:-playwright/e2e/launch/launch.spec.ts}"
+      ],
+      "build": {
+        "context": "../../../..",
+        "dockerfile": "apps/desktop/playwright/Dockerfile"
+      }
+    }
+  },
+  "networks": {
+    "isolated": {
+      "internal": true
+    }
+  }
+}

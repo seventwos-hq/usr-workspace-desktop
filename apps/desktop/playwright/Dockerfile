@@ -11,7 +11,7 @@ COPY --from=pnpm /opt/pnpm /opt/pnpm
 RUN ln -s /opt/pnpm/pnpm /usr/local/bin/pnpm
 
 RUN apt-get update && \
-    apt-get -y install xvfb dbus-x11 && \
+    apt-get -y install xvfb dbus-x11 x11-utils && \
     apt-get purge -y --auto-remove && \
     rm -rf /var/lib/apt/lists/* && \
     npm install -g pnpm@latest-11

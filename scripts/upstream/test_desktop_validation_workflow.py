@@ -89,6 +89,11 @@ class DesktopValidationWorkflowTests(unittest.TestCase):
         self.assertNotIn("docker/build-push-action", natives)
         self.assertNotIn("rustup toolchain install", natives)
 
+        fix_perms = workflow[workflow.index("            - name: Fix permissions"):workflow.index("            - name: Check native libraries in hak dependencies")]
+        self.assertIn('"$(id -u):$(id -g)" "$GITHUB_WORKSPACE"', fix_perms)
+        self.assertIn('u+rwX "$GITHUB_WORKSPACE"', fix_perms)
+        self.assertNotIn("**/node_modules", fix_perms)
+
     def test_release_stages_and_manifests_every_supported_platform(self) -> None:
         workflow = RELEASE_WORKFLOW.read_text(encoding="utf-8")
         expected = {

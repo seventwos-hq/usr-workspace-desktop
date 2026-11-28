@@ -74,6 +74,9 @@ contextBridge.exposeInMainWorld("electron", {
     async setSettingValue(settingName: string, value: any): Promise<void> {
         return ipcRenderer.invoke("setSettingValue", settingName, value);
     },
+    async submitFeedback(input: { category: string; title: string; body: string }): Promise<unknown> {
+        return ipcRenderer.invoke("submitFeedback", input);
+    },
     async getSettingValue(settingName: string): Promise<any> {
         return ipcRenderer.invoke("getSettingValue", settingName);
     },

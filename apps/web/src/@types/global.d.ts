@@ -131,6 +131,12 @@ declare global {
         // Settings
         setSettingValue(settingName: string, value: any): Promise<void>;
         getSettingValue(settingName: string): Promise<any>;
+        // Public GitHub Issues feedback broker (absent on older desktop builds)
+        submitFeedback?(input: {
+            category: string;
+            title: string;
+            body: string;
+        }): Promise<{ ok: boolean; message?: string }>;
         // X.509 hardware key IPC
         x509?: X509Api;
     }

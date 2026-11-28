@@ -41,9 +41,24 @@ const FeedbackDialog: React.FC<IProps> = (props: IProps) => {
         Modal.createDialog(BugReportDialog, {});
     };
 
-    const hasFeedback = !!SdkConfig.get().bug_report_endpoint_url;
+    const issueBroker = window.electron?.submitFeedback?.bind(window.electron);
+    const hasFeedback = !!issueBroker || !!SdkConfig.get().bug_report_endpoint_url;
     const onFinished = (sendFeedback: boolean): void => {
-        if (hasFeedback && sendFeedback) {
+        if (issueBroker && sendFeedback) {
+            const text = comment.trim();
+            const title = text.split("\n", 1)[0].slice(0, 120);
+            void issueBroker({ category: "idea", title, body: text })
+                .then(
+                    (result) => result,
+                    () => ({ ok: false }) as const,
+                )
+                .then((result) => {
+                    Modal.createDialog(InfoDialog, {
+                        title: result.ok ? _t("feedback|sent") : _t("feedback|failed"),
+                        description: result.ok ? _t("bug_reporting|thank_you") : _t("feedback|failed_description"),
+                    });
+                });
+        } else if (hasFeedback && sendFeedback) {
             const label = props.feature ? `${props.feature}-feedback` : "feedback";
             // TODO: Handle rejection.
             void submitFeedback(label, comment, canContact);
@@ -63,7 +78,7 @@ const FeedbackDialog: React.FC<IProps> = (props: IProps) => {
                 <ChatSolidIcon />
                 <h3>{_t("feedback|comment_label")}</h3>
 
-                <p>{_t("feedback|platform_username")}</p>
+                <p>{issueBroker ? _t("feedback|public_issue_notice") : _t("feedback|platform_username")}</p>
 
                 <Field
                     id="feedbackComment"
@@ -86,7 +101,7 @@ const FeedbackDialog: React.FC<IProps> = (props: IProps) => {
     }
 
     let bugReports: JSX.Element | undefined;
-    if (hasFeedback) {
+    if (hasFeedback && !issueBroker) {
         bugReports = (
             <p className="mx_FeedbackDialog_section_microcopy">
                 {_t(

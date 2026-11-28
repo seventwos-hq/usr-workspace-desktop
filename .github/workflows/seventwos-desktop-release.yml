@@ -116,36 +116,27 @@ jobs:
                   stage_one artifacts/release-linux-arm64-sqlcipher-static '*arm64.deb' linux-arm64.deb
                   printf 'version=%s\n' "$VERSION" >> "$GITHUB_OUTPUT"
                   printf 'prerelease=%s\n' "$PRERELEASE" >> "$GITHUB_OUTPUT"
-            - name: Build checksum manifest
+            - name: Build AGPL corresponding source archive
+              run: python3 scripts/release/source_archive.py --root . --output release/source.tar.gz --check
+            - name: Build and sign channel manifest
+              id: manifest
               shell: bash
               env:
                   VERSION: ${{ steps.stage.outputs.version }}
+                  PRERELEASE: ${{ steps.stage.outputs.prerelease }}
                   BASE_URL: ${{ secrets.DESKTOP_DOWNLOADS_BASE_URL }}
+                  MANIFEST_PRIVATE_KEY: ${{ secrets.DESKTOP_MANIFEST_PRIVATE_KEY }}
               run: |
                   set -euo pipefail
                   test -n "$BASE_URL"
                   [[ "$BASE_URL" == https://* ]]
-                  python3 - "$BASE_URL" "$VERSION" <<'PY'
-                  import hashlib, json, sys
-                  from pathlib import Path
-                  base, version = sys.argv[1].rstrip("/"), sys.argv[2]
-                  manifest = {}
-                  artifacts = (
-                      ("windows", "win-x64.msi"),
-                      ("win-x64", "win-x64.msi"),
-                      ("win-arm64", "win-arm64.msi"),
-                      ("macos", "macos.dmg"),
-                      ("linux", "linux-amd64.deb"),
-                      ("linux-amd64", "linux-amd64.deb"),
-                      ("linux-arm64", "linux-arm64.deb"),
-                  )
-                  for platform, name in artifacts:
-                      path = Path("release") / name
-                      digest = hashlib.sha256(path.read_bytes()).hexdigest()
-                      manifest[platform] = {"url": f"{base}/v{version}/{name}", "version": version, "sha256": digest}
-                  Path("manifest.json").write_text(json.dumps(manifest, sort_keys=True) + "\n")
-                  PY
-                  python3 -m json.tool manifest.json >/dev/null
+                  test -n "$MANIFEST_PRIVATE_KEY"
+                  trap 'rm -f manifest-key.pem' EXIT
+                  printf "%s" "$MANIFEST_PRIVATE_KEY" > manifest-key.pem
+                  chmod 600 manifest-key.pem
+                  CHANNEL=stable; [[ "$PRERELEASE" != true ]] || CHANNEL=beta
+                  python3 scripts/release/manifest.py generate --release-dir release --base-url "$BASE_URL" --version "$VERSION" --channel "$CHANNEL" --key manifest-key.pem > manifest.json
+                  echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
             - name: Upload versioned installers
               shell: bash
               env:
@@ -176,13 +167,12 @@ jobs:
                       --account-name "$AZURE_STORAGE_ACCOUNT" \
                       --auth-mode login \
                       --container-name "$AZURE_STORAGE_CONTAINER" \
-                      --name "v$VERSION/manifest.json" \
+                      --name "v$VERSION/manifest-${{ steps.manifest.outputs.channel }}.json" \
                       --file manifest.json \
                       --overwrite false \
                       --content-cache-control 'public, max-age=300' \
                       --only-show-errors
-            - name: Publish latest stable download manifest
-              if: steps.stage.outputs.prerelease != 'true'
+            - name: Publish current channel manifest
               shell: bash
               env:
                   AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
@@ -193,8 +183,11 @@ jobs:
                       --account-name "$AZURE_STORAGE_ACCOUNT" \
                       --auth-mode login \
                       --container-name "$AZURE_STORAGE_CONTAINER" \
-                      --name manifest.json \
+                      --name "manifest-${{ steps.manifest.outputs.channel }}.json" \
                       --file manifest.json \
                       --overwrite true \
                       --content-cache-control 'public, max-age=300' \
                       --only-show-errors
+            - name: Remove release signing material
+              if: always()
+              run: rm -f manifest-key.pem manifest.json

@@ -73,6 +73,14 @@ jobs:
                   }
                   NODE
 
+            - name: Test release configuration and source package contract
+              run: |
+                  python3 -m unittest scripts/release/test_manifest.py -v
+                  python3 scripts/release/check_notice.py apps/desktop/seventwos.com/release/config.json
+                  python3 scripts/release/check_notice.py apps/desktop/seventwos.com/preview/config.json
+                  python3 scripts/release/source_archive.py --root . --output source-check.tar.gz --check
+                  test -s source-check.tar.gz
+
             # Electron lazily installs on import; prepare it before parallel test workers.
             - name: Prepare Electron binary for unit tests
               run: pnpm --filter seventwos-workspace-desktop exec install-electron

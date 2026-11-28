@@ -81,5 +81,7 @@
                 }
             }
         ]
-    }
+    },
+    "source_code_notice": "GNU Affero General Public License v3. The corresponding source code is available for this release.",
+    "source_code_url": "https://workspace.seventwos.com/desktop/source/"
 }

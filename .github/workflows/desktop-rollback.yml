@@ -1,0 +1,45 @@
+name: Rollback Seventwos Desktop Channel
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Channel whose current manifest will be rolled back
+        required: true
+        type: choice
+        options: [stable, beta]
+      version:
+        description: Release version to restore
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  rollback:
+    runs-on: ubuntu-24.04
+    environment: desktop-release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Verify and roll back channel
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          VERSION: ${{ inputs.version }}
+          AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+          AZURE_STORAGE_CONTAINER: ${{ secrets.AZURE_STORAGE_CONTAINER }}
+          MANIFEST_PUBLIC_KEY: ${{ secrets.DESKTOP_MANIFEST_PUBLIC_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$MANIFEST_PUBLIC_KEY"
+          trap 'rm -f public.pem rollback.json' EXIT
+          printf "%s" "$MANIFEST_PUBLIC_KEY" > public.pem
+          scripts/release/rollback.sh "$CHANNEL" "$VERSION" public.pem

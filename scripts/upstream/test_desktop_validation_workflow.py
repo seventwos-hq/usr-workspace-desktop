@@ -103,14 +103,19 @@ class DesktopValidationWorkflowTests(unittest.TestCase):
             "linux-amd64.deb": "artifacts/release-linux-amd64-sqlcipher-static",
             "linux-arm64.deb": "artifacts/release-linux-arm64-sqlcipher-static",
         }
-        stage = workflow[workflow.index("            - name: Validate release tag, branch policy, and stage installers"):workflow.index("            - name: Build checksum manifest")]
-        manifest = workflow[workflow.index("            - name: Build checksum manifest"):workflow.index("            - name: Upload versioned installers")]
+        stage = workflow[workflow.index("            - name: Validate release tag, branch policy, and stage installers"):workflow.index("            - name: Build and sign channel manifest")]
+        manifest = workflow[workflow.index("            - name: Build and sign channel manifest"):workflow.index("            - name: Upload versioned installers")]
         for filename, artifact in expected.items():
             self.assertIn(artifact, stage)
             self.assertIn(filename, stage)
-            self.assertIn(filename, manifest)
-        for compat_key in ('"windows"', '"linux"', '"win-x64"', '"win-arm64"', '"macos"', '"linux-amd64"', '"linux-arm64"'):
-            self.assertIn(compat_key, manifest)
+        self.assertIn("scripts/release/manifest.py generate", manifest)
+        self.assertIn("trap 'rm -f manifest-key.pem' EXIT", manifest)
+        uploads = workflow[workflow.index("            - name: Upload versioned installers"):]
+        self.assertLess(
+            uploads.index("            - name: Publish current channel manifest"),
+            uploads.index("            - name: Remove release signing material"),
+        )
+        self.assertIn("rm -f manifest-key.pem manifest.json", uploads)
         self.assertEqual(workflow.count("fail-fast: false"), 2)
 
     def test_release_upload_is_tag_gated_and_oidc_only(self) -> None:
@@ -129,12 +134,12 @@ class DesktopValidationWorkflowTests(unittest.TestCase):
         self.assertIn('VERSION="${TAG#desktop-v}"', workflow)
         self.assertIn('git merge-base --is-ancestor "$TAG_SHA" origin/main', workflow)
         self.assertIn("Publish versioned download manifest", workflow)
-        self.assertIn('--name "v$VERSION/manifest.json"', workflow)
+        self.assertIn('--name "v$VERSION/manifest-${{ steps.manifest.outputs.channel }}.json"', workflow)
         self.assertGreaterEqual(workflow.count("--overwrite false"), 2)
         self.assertNotIn("VERSIONED_OVERWRITE", workflow)
-        self.assertIn("if: steps.stage.outputs.prerelease != 'true'", workflow)
-        self.assertIn("Publish latest stable download manifest", workflow)
-        self.assertIn("--name manifest.json", workflow)
+        self.assertNotIn("if: steps.stage.outputs.prerelease != 'true'", workflow)
+        self.assertIn("Publish current channel manifest", workflow)
+        self.assertIn('--name "manifest-${{ steps.manifest.outputs.channel }}.json"', workflow)
         self.assertIn("--overwrite true", workflow)
         self.assertIn("SEVENTWOS_WORKSPACE_SIGNTOOL_SUBJECT_NAME", workflow)
         self.assertIn("SEVENTWOS_WORKSPACE_SIGNTOOL_THUMBPRINT", workflow)
